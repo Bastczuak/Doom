@@ -51,7 +51,7 @@ impl MapMetaData for LineDef {
   fn read(wad: &[u8], offset: usize) -> Result<Self> {
     let start_vertex = utils::to_u16(wad, offset)?;
     let end_vertex = utils::to_u16(wad, offset + 2)?;
-    let flags = utils::to_u16(wad, offset + 2)?;
+    let flags = utils::to_u16(wad, offset + 4)?;
     let line_type = utils::to_u16(wad, offset + 6)?;
     let sector_tag = utils::to_u16(wad, offset + 8)?;
     let front_side_def = utils::to_u16(wad, offset + 10)?;
