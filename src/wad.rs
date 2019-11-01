@@ -25,7 +25,7 @@ pub struct Wad {
 impl Wad {
   pub fn new(wad: &[u8]) -> std::io::Result<Self> {
     Ok(Wad {
-      wad: wad.to_vec(),
+      wad: Vec::from(wad),
       directories: Vec::new(),
     })
   }
