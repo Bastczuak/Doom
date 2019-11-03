@@ -42,11 +42,7 @@ impl Wad {
   pub fn read_map(&self, name: &str) -> Result<Map> {
     let vertexes: Vec<Vertex> = self.read_map_data_for::<Vertex>(name)?;
     let line_defs: Vec<LineDef> = self.read_map_data_for::<LineDef>(name)?;
-    Ok(Map {
-      name: String::from(name),
-      vertexes,
-      line_defs,
-    })
+    Ok(Map::new(name, vertexes, line_defs))
   }
 
   fn read_header(&self, offset: usize) -> Result<Header> {
