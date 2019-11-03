@@ -7,7 +7,6 @@ mod wad;
 use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::Wad;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
