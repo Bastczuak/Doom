@@ -4,7 +4,7 @@ import * as THREE from 'three'
 (async function run () {
   const response = await fetch('./Doom1.wad')
   const downloadedMap = await response.arrayBuffer()
-  const map = doom.init(downloadedMap)
+  const map = doom.init(downloadedMap, 'E1M1')
 
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
