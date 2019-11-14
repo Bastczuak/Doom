@@ -7,8 +7,8 @@ import * as THREE from 'three'
   const map = doom.init(downloadedMap)
   console.log('###', map)
 
-  const xShift = -map.x_min - window.innerWidth * 2
-  const yShift = -map.y_min - window.innerHeight * 2
+  const xShift = -map.x_min - map.x_max / 2
+  const yShift = -map.y_min + map.y_max / 2
   const scale = 0.025
   const material = new THREE.LineBasicMaterial({ color: 0xffffff })
 
