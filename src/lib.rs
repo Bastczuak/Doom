@@ -1,6 +1,7 @@
 mod datatypes;
 mod errors;
 mod map;
+mod player;
 mod utils;
 mod wad;
 

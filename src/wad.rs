@@ -1,6 +1,7 @@
 use crate::datatypes::Result;
 use crate::errors::DoomError;
-use crate::map::{LineDef, Map, MapMetaData, Vertex};
+use crate::map::{LineDef, Map, MapMetaData, Things, Vertex};
+use crate::player::Player;
 use crate::utils;
 
 #[derive(Debug)]
@@ -40,9 +41,20 @@ impl Wad {
   }
 
   pub fn read_map(&self, name: &str) -> Result<Map> {
-    let vertexes: Vec<Vertex> = self.read_map_data_for::<Vertex>(name)?;
-    let line_defs: Vec<LineDef> = self.read_map_data_for::<LineDef>(name)?;
-    Ok(Map::new(name, vertexes, line_defs))
+    match self.find_map_index(name) {
+      Some(mut map_index) => {
+        let vertexes: Vec<Vertex> = self.read_map_data_for::<Vertex>(map_index)?;
+        let line_defs: Vec<LineDef> = self.read_map_data_for::<LineDef>(map_index)?;
+        let things: Vec<Things> = self.read_map_data_for::<Things>(map_index)?;
+        let player = Player::new(1);
+        Ok(Map::new(name, vertexes, line_defs, things, player))
+      }
+
+      None => Err(DoomError::Wad(format!(
+        "Failed to load MAP: {}",
+        name
+      ))),
+    }
   }
 
   fn read_header(&self, offset: usize) -> Result<Header> {
@@ -80,33 +92,25 @@ impl Wad {
     None
   }
 
-  fn read_map_data_for<T: MapMetaData>(&self, name: &str) -> Result<Vec<T>> {
-    match self.find_map_index(name) {
-      Some(mut map_index) => {
-        map_index += T::index();
+  fn read_map_data_for<T: MapMetaData>(&self, map_index: usize) -> Result<Vec<T>> {
+    let mut index = map_index + T::index();
 
-        if self.directories[map_index].lump_name != T::lump_name() {
-          return Err(DoomError::Wad(format!(
-            "Failed to load map vertexes data MAP: {}",
-            name
-          )));
-        }
-
-        let mut vec = Vec::new();
-        for i in 0..self.directories[map_index].lump_size / T::size_in_bytes() {
-          let vertex = MapMetaData::read(
-            &self.wad,
-            (self.directories[map_index].lump_offset + i * T::size_in_bytes()) as usize,
-          )?;
-          vec.push(vertex);
-        }
-        Ok(vec)
-      }
-
-      None => Err(DoomError::Wad(format!(
-        "Failed to load map vertexes data MAP: {}",
-        name
-      ))),
+    if self.directories[index].lump_name != T::lump_name() {
+      return Err(DoomError::Wad(format!(
+        "Failed to load {} for MAP {}",
+        T::lump_name(),
+        self.directories[map_index].lump_name,
+      )));
     }
+
+    let mut vec = Vec::new();
+    for i in 0..self.directories[index].lump_size / T::size_in_bytes() {
+      let vertex = MapMetaData::read(
+        &self.wad,
+        (self.directories[index].lump_offset + i * T::size_in_bytes()) as usize,
+      )?;
+      vec.push(vertex);
+    }
+    Ok(vec)
   }
 }

@@ -1,6 +1,7 @@
 use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils;
 
+use crate::player::Player;
 use serde::{Deserialize, Serialize};
 
 pub trait MapMetaData: Sized {
@@ -81,10 +82,50 @@ impl MapMetaData for LineDef {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct Things {
+  x: i16,
+  y: i16,
+  direction: u16,
+  typ: u16,
+  flags: u16,
+}
+
+impl MapMetaData for Things {
+  fn read(wad: &[u8], offset: usize) -> Result<Self> {
+    let x = utils::to_i16(wad, offset)?;
+    let y = utils::to_i16(wad, offset + 2)?;
+    let direction = utils::to_u16(wad, offset + 4)?;
+    let typ = utils::to_u16(wad, offset + 6)?;
+    let flags = utils::to_u16(wad, offset + 8)?;
+    Ok(Things {
+      x,
+      y,
+      direction,
+      typ,
+      flags,
+    })
+  }
+
+  fn lump_name() -> String {
+    String::from("THINGS")
+  }
+
+  fn size_in_bytes() -> u32 {
+    std::mem::size_of::<Things>() as u32
+  }
+
+  fn index() -> usize {
+    MapLumpsIndex::THINGS as usize
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
   name: String,
   vertexes: Vec<Vertex>,
   line_defs: Vec<LineDef>,
+  things: Vec<Things>,
+  player: Player,
   x_min: i16,
   x_max: i16,
   y_min: i16,
@@ -92,17 +133,26 @@ pub struct Map {
 }
 
 impl Map {
-  pub fn new(name: &str, vertexes: Vec<Vertex>, line_defs: Vec<LineDef>) -> Self {
+  pub fn new(
+    name: &str,
+    vertexes: Vec<Vertex>,
+    line_defs: Vec<LineDef>,
+    things: Vec<Things>,
+    player: Player,
+  ) -> Self {
     let mut map = Map {
       name: String::from(name),
       vertexes,
       line_defs,
+      things,
+      player,
       x_min: std::i16::MAX,
       x_max: std::i16::MIN,
       y_min: std::i16::MAX,
       y_max: std::i16::MIN,
     };
     map.calc_map_shift();
+    map.calc_player_position();
     map
   }
 
@@ -118,6 +168,16 @@ impl Map {
         self.y_min = vertex.y;
       } else if self.y_max < vertex.y {
         self.y_max = vertex.y;
+      }
+    }
+  }
+
+  fn calc_player_position(&mut self) {
+    for thing in &self.things {
+      if thing.typ == self.player.id {
+        self.player.x = thing.x;
+        self.player.y = thing.y;
+        self.player.direction = thing.direction
       }
     }
   }

@@ -5,12 +5,11 @@ import * as THREE from 'three'
   const response = await fetch('./Doom1.wad')
   const downloadedMap = await response.arrayBuffer()
   const map = doom.init(downloadedMap)
-  console.log('###', map)
 
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
-  const scale = 0.025
-  const material = new THREE.LineBasicMaterial({ color: 0xffffff })
+
+  console.log('###', map, xShift, yShift)
 
   const scene = new THREE.Scene()
   map.line_defs.forEach(line => {
@@ -21,15 +20,24 @@ import * as THREE from 'three'
     geometry.vertices.push(new THREE.Vector3(start.x + xShift, start.y + yShift, 0))
     geometry.vertices.push(new THREE.Vector3(end.x + xShift, end.y + yShift, 0))
     geometry.vertices.push(new THREE.Vector3(end.x + xShift, end.y + yShift, 0))
+    const material = new THREE.LineBasicMaterial({ color: 0xffffff })
     const l = new THREE.Line(geometry, material)
-    l.scale.set(scale, scale, scale)
     scene.add(l)
   })
+
+  const geometry = new THREE.CircleGeometry(25, 32)
+  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+  const player = new THREE.Mesh(geometry, material)
+  player.position.set(map.player.x + xShift, map.player.y + yShift, 0)
+  scene.add(player)
 
   const axesHelper = new THREE.AxesHelper(1000)
   scene.add(axesHelper)
 
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
+  const scale = 0.025
+  scene.scale.set(scale, scale, scale)
+
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000)
   camera.position.set(0, 0, 200)
   camera.lookAt(0, 0, 0)
 
