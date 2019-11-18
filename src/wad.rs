@@ -1,6 +1,6 @@
 use crate::datatypes::Result;
 use crate::errors::DoomError;
-use crate::map::{LineDef, Map, MapMetaData, Things, Vertex};
+use crate::map::{LineDef, Map, MapMetaData, Thing, Vertex, Node};
 use crate::player::Player;
 use crate::utils;
 
@@ -42,18 +42,16 @@ impl Wad {
 
   pub fn read_map(&self, name: &str) -> Result<Map> {
     match self.find_map_index(name) {
-      Some(mut map_index) => {
+      Some(map_index) => {
         let vertexes: Vec<Vertex> = self.read_map_data_for::<Vertex>(map_index)?;
         let line_defs: Vec<LineDef> = self.read_map_data_for::<LineDef>(map_index)?;
-        let things: Vec<Things> = self.read_map_data_for::<Things>(map_index)?;
+        let things: Vec<Thing> = self.read_map_data_for::<Thing>(map_index)?;
+        let nodes: Vec<Node> = self.read_map_data_for::<Node>(map_index)?;
         let player = Player::new(1);
-        Ok(Map::new(name, vertexes, line_defs, things, player))
+        Ok(Map::new(name, vertexes, line_defs, things, nodes,player))
       }
 
-      None => Err(DoomError::Wad(format!(
-        "Failed to load MAP: {}",
-        name
-      ))),
+      None => Err(DoomError::Wad(format!("Failed to load MAP: {}", name))),
     }
   }
 
@@ -93,7 +91,7 @@ impl Wad {
   }
 
   fn read_map_data_for<T: MapMetaData>(&self, map_index: usize) -> Result<Vec<T>> {
-    let mut index = map_index + T::index();
+    let index = map_index + T::index();
 
     if self.directories[index].lump_name != T::lump_name() {
       return Err(DoomError::Wad(format!(

@@ -32,7 +32,7 @@ impl Error for DoomError {
     match &self {
       DoomError::Number(ref cause) => Some(cause),
       DoomError::String(ref cause) => Some(cause),
-      DoomError::Wad(ref cause) => None,
+      DoomError::Wad(ref _cause) => None,
     }
   }
 }

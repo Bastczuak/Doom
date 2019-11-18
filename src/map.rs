@@ -82,7 +82,7 @@ impl MapMetaData for LineDef {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Things {
+pub struct Thing {
   x: i16,
   y: i16,
   direction: u16,
@@ -90,14 +90,14 @@ pub struct Things {
   flags: u16,
 }
 
-impl MapMetaData for Things {
+impl MapMetaData for Thing {
   fn read(wad: &[u8], offset: usize) -> Result<Self> {
     let x = utils::to_i16(wad, offset)?;
     let y = utils::to_i16(wad, offset + 2)?;
     let direction = utils::to_u16(wad, offset + 4)?;
     let typ = utils::to_u16(wad, offset + 6)?;
     let flags = utils::to_u16(wad, offset + 8)?;
-    Ok(Things {
+    Ok(Thing {
       x,
       y,
       direction,
@@ -111,7 +111,7 @@ impl MapMetaData for Things {
   }
 
   fn size_in_bytes() -> u32 {
-    std::mem::size_of::<Things>() as u32
+    std::mem::size_of::<Thing>() as u32
   }
 
   fn index() -> usize {
@@ -120,11 +120,77 @@ impl MapMetaData for Things {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct Node {
+  x_partition: i16,
+  y_partition: i16,
+  change_x_partition: i16,
+  change_y_partition: i16,
+  right_box_top: i16,
+  right_box_bottom: i16,
+  right_box_left: i16,
+  right_box_right: i16,
+  left_box_top: i16,
+  left_box_bottom: i16,
+  left_box_left: i16,
+  left_box_right: i16,
+  right_child: u16,
+  left_child: u16,
+}
+
+impl MapMetaData for Node {
+  fn read(wad: &[u8], offset: usize) -> Result<Self> {
+    let x_partition = utils::to_i16(wad, offset)?;
+    let y_partition = utils::to_i16(wad, offset + 2)?;
+    let change_x_partition = utils::to_i16(wad, offset + 4)?;
+    let change_y_partition = utils::to_i16(wad, offset + 6)?;
+    let right_box_top = utils::to_i16(wad, offset + 8)?;
+    let right_box_bottom = utils::to_i16(wad, offset + 10)?;
+    let right_box_left = utils::to_i16(wad, offset + 12)?;
+    let right_box_right = utils::to_i16(wad, offset + 14)?;
+    let left_box_top = utils::to_i16(wad, offset + 16)?;
+    let left_box_bottom = utils::to_i16(wad, offset + 18)?;
+    let left_box_left = utils::to_i16(wad, offset + 20)?;
+    let left_box_right = utils::to_i16(wad, offset + 22)?;
+    let right_child = utils::to_u16(wad, offset + 24)?;
+    let left_child = utils::to_u16(wad, offset + 26)?;
+    Ok(Node {
+      x_partition,
+      y_partition,
+      change_x_partition,
+      change_y_partition,
+      right_box_top,
+      right_box_bottom,
+      right_box_left,
+      right_box_right,
+      left_box_top,
+      left_box_bottom,
+      left_box_left,
+      left_box_right,
+      right_child,
+      left_child,
+    })
+  }
+
+  fn lump_name() -> String {
+    String::from("NODES")
+  }
+
+  fn size_in_bytes() -> u32 {
+    std::mem::size_of::<Node>() as u32
+  }
+
+  fn index() -> usize {
+    MapLumpsIndex::NODES as usize
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
   name: String,
   vertexes: Vec<Vertex>,
   line_defs: Vec<LineDef>,
-  things: Vec<Things>,
+  things: Vec<Thing>,
+  nodes: Vec<Node>,
   player: Player,
   x_min: i16,
   x_max: i16,
@@ -137,7 +203,8 @@ impl Map {
     name: &str,
     vertexes: Vec<Vertex>,
     line_defs: Vec<LineDef>,
-    things: Vec<Things>,
+    things: Vec<Thing>,
+    nodes: Vec<Node>,
     player: Player,
   ) -> Self {
     let mut map = Map {
@@ -145,6 +212,7 @@ impl Map {
       vertexes,
       line_defs,
       things,
+      nodes,
       player,
       x_min: std::i16::MAX,
       x_max: std::i16::MIN,
