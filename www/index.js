@@ -15,11 +15,12 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
     const end = vertexes[line.end_vertex]
     const geometry = new THREE.Geometry()
     geometry.vertices.push(
-      new THREE.Vector3(start.x + xShift, start.y + yShift, 0),
-      new THREE.Vector3(end.x + xShift, end.y + yShift, 0),
+      new THREE.Vector3(start.x, start.y, 0),
+      new THREE.Vector3(end.x, end.y, 0),
     )
     const material = new THREE.LineBasicMaterial({ color: 0xffffff })
     const l = new THREE.Line(geometry, material)
+    l.position.set(xShift, yShift, 0)
     scene.add(l)
   })
 }
@@ -43,34 +44,37 @@ function addNodes ({ nodes, xShift, yShift }, scene) {
   let material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
   let geometry = new THREE.Geometry()
   geometry.vertices.push(
-    new THREE.Vector3(right_box_left + xShift, right_box_top + yShift, 0),
-    new THREE.Vector3(right_box_right + xShift, right_box_top + yShift, 0),
-    new THREE.Vector3(right_box_right + xShift, right_box_bottom + yShift, 0),
-    new THREE.Vector3(right_box_left + xShift, right_box_bottom + yShift, 0),
-    new THREE.Vector3(right_box_left + xShift, right_box_top + yShift, 0),
+    new THREE.Vector3(right_box_left, right_box_top, 0),
+    new THREE.Vector3(right_box_right, right_box_top, 0),
+    new THREE.Vector3(right_box_right, right_box_bottom, 0),
+    new THREE.Vector3(right_box_left, right_box_bottom, 0),
+    new THREE.Vector3(right_box_left, right_box_top, 0),
   )
   let rect = new THREE.Line(geometry, material)
+  rect.position.set(xShift, yShift, 0)
   scene.add(rect)
 
   material = new THREE.LineBasicMaterial({ color: 0xff0000 })
   geometry = new THREE.Geometry()
   geometry.vertices.push(
-    new THREE.Vector3(left_box_left + xShift, left_box_top + yShift, 0),
-    new THREE.Vector3(left_box_right + xShift, left_box_top + yShift, 0),
-    new THREE.Vector3(left_box_right + xShift, left_box_bottom + yShift, 0),
-    new THREE.Vector3(left_box_left + xShift, left_box_bottom + yShift, 0),
-    new THREE.Vector3(left_box_left + xShift, left_box_top + yShift, 0),
+    new THREE.Vector3(left_box_left, left_box_top, 0),
+    new THREE.Vector3(left_box_right, left_box_top, 0),
+    new THREE.Vector3(left_box_right, left_box_bottom, 0),
+    new THREE.Vector3(left_box_left, left_box_bottom, 0),
+    new THREE.Vector3(left_box_left, left_box_top, 0),
   )
   rect = new THREE.Line(geometry, material)
+  rect.position.set(xShift, yShift, 0)
   scene.add(rect)
 
   geometry = new THREE.Geometry()
   geometry.vertices.push(
-    new THREE.Vector3(x_partition + xShift, y_partition + yShift, 0),
-    new THREE.Vector3(x_partition + change_x_partition + xShift, y_partition + change_y_partition + yShift, 0),
+    new THREE.Vector3(x_partition, y_partition, 0),
+    new THREE.Vector3(x_partition + change_x_partition, y_partition + change_y_partition, 0),
   )
   material = new THREE.LineBasicMaterial({ color: 0x77c9f9 })
   const line = new THREE.Line(geometry, material)
+  line.position.set(xShift, yShift, 0)
   scene.add(line)
 
 }
