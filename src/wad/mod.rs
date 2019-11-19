@@ -1,8 +1,18 @@
+mod linedef;
+mod map;
+mod node;
+mod thing;
+mod vertex;
+
 use crate::datatypes::Result;
 use crate::errors::DoomError;
-use crate::map::{LineDef, Map, MapMetaData, Thing, Vertex, Node};
 use crate::player::Player;
 use crate::utils;
+use crate::wad::linedef::LineDef;
+use crate::wad::map::{Map, MapMetaData};
+use crate::wad::node::Node;
+use crate::wad::thing::Thing;
+use crate::wad::vertex::Vertex;
 
 #[derive(Debug)]
 pub struct Header {
@@ -48,7 +58,7 @@ impl Wad {
         let things: Vec<Thing> = self.read_map_data_for::<Thing>(map_index)?;
         let nodes: Vec<Node> = self.read_map_data_for::<Node>(map_index)?;
         let player = Player::new(1);
-        Ok(Map::new(name, vertexes, line_defs, things, nodes,player))
+        Ok(Map::new(name, vertexes, line_defs, things, nodes, player))
       }
 
       None => Err(DoomError::Wad(format!("Failed to load MAP: {}", name))),
