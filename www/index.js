@@ -80,7 +80,7 @@ function addNodes ({ nodes, xShift, yShift }, scene) {
 }
 
 (async function run () {
-  const response = await fetch('./Doom1.wad')
+  const response = await fetch('./doom1.wad')
   const downloadedMap = await response.arrayBuffer()
   const map = doom.init(downloadedMap, 'E1M1')
 
