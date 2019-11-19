@@ -17,8 +17,8 @@ pub struct Node {
   left_box_bottom: i16,
   left_box_left: i16,
   left_box_right: i16,
-  right_child: u16,
-  left_child: u16,
+  right_child: u16, // front
+  left_child: u16, // back
 }
 
 impl MapMetaData for Node {

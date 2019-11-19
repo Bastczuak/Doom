@@ -1,4 +1,4 @@
-import * as doom from 'doom'
+import { doomInit, checkForSubSector } from 'doom'
 import * as THREE from 'three'
 
 function addPlayer ({ player, xShift, yShift }, scene) {
@@ -25,64 +25,97 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   })
 }
 
-function addNodes ({ nodes, xShift, yShift }, scene) {
-  const {
-    x_partition,
-    y_partition,
-    change_x_partition,
-    change_y_partition,
-    right_box_top,
-    right_box_bottom,
-    right_box_right,
-    right_box_left,
-    left_box_top,
-    left_box_bottom,
-    left_box_right,
-    left_box_left,
-  } = nodes[nodes.length - 1]
 
-  let material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
-  let geometry = new THREE.Geometry()
-  geometry.vertices.push(
-    new THREE.Vector3(right_box_left, right_box_top, 0),
-    new THREE.Vector3(right_box_right, right_box_top, 0),
-    new THREE.Vector3(right_box_right, right_box_bottom, 0),
-    new THREE.Vector3(right_box_left, right_box_bottom, 0),
-    new THREE.Vector3(right_box_left, right_box_top, 0),
-  )
-  let rect = new THREE.Line(geometry, material)
-  rect.position.set(xShift, yShift, 0)
-  scene.add(rect)
+function addNodes ({ nodes, xShift, yShift, isPointOnLeftSide }, scene) {
+  const recursive = (nodeIndex) => {
+    if (checkForSubSector(nodeIndex)) {
+      return
+    }
 
-  material = new THREE.LineBasicMaterial({ color: 0xff0000 })
-  geometry = new THREE.Geometry()
-  geometry.vertices.push(
-    new THREE.Vector3(left_box_left, left_box_top, 0),
-    new THREE.Vector3(left_box_right, left_box_top, 0),
-    new THREE.Vector3(left_box_right, left_box_bottom, 0),
-    new THREE.Vector3(left_box_left, left_box_bottom, 0),
-    new THREE.Vector3(left_box_left, left_box_top, 0),
-  )
-  rect = new THREE.Line(geometry, material)
-  rect.position.set(xShift, yShift, 0)
-  scene.add(rect)
+    scene.remove(scene.getObjectByName('splitter'))
+    scene.remove(scene.getObjectByName('left'))
+    scene.remove(scene.getObjectByName('right'))
 
-  geometry = new THREE.Geometry()
-  geometry.vertices.push(
-    new THREE.Vector3(x_partition, y_partition, 0),
-    new THREE.Vector3(x_partition + change_x_partition, y_partition + change_y_partition, 0),
-  )
-  material = new THREE.LineBasicMaterial({ color: 0x77c9f9 })
-  const line = new THREE.Line(geometry, material)
-  line.position.set(xShift, yShift, 0)
-  scene.add(line)
+    const {
+      x_partition,
+      y_partition,
+      change_x_partition,
+      change_y_partition,
+      right_box_top,
+      right_box_bottom,
+      right_box_right,
+      right_box_left,
+      left_box_top,
+      left_box_bottom,
+      left_box_right,
+      left_box_left,
+    } = nodes[nodeIndex]
 
+    let material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
+    let geometry = new THREE.Geometry()
+    geometry.vertices.push(
+      new THREE.Vector3(right_box_left, right_box_top, 0),
+      new THREE.Vector3(right_box_right, right_box_top, 0),
+      new THREE.Vector3(right_box_right, right_box_bottom, 0),
+      new THREE.Vector3(right_box_left, right_box_bottom, 0),
+      new THREE.Vector3(right_box_left, right_box_top, 0),
+    )
+    let rect = new THREE.Line(geometry, material)
+    rect.position.set(xShift, yShift, 0)
+    rect.name = 'right'
+    scene.add(rect)
+
+    material = new THREE.LineBasicMaterial({ color: 0xff0000 })
+    geometry = new THREE.Geometry()
+    geometry.vertices.push(
+      new THREE.Vector3(left_box_left, left_box_top, 0),
+      new THREE.Vector3(left_box_right, left_box_top, 0),
+      new THREE.Vector3(left_box_right, left_box_bottom, 0),
+      new THREE.Vector3(left_box_left, left_box_bottom, 0),
+      new THREE.Vector3(left_box_left, left_box_top, 0),
+    )
+    rect = new THREE.Line(geometry, material)
+    rect.position.set(xShift, yShift, 0)
+    rect.name = 'left'
+    scene.add(rect)
+
+    geometry = new THREE.Geometry()
+    geometry.vertices.push(
+      new THREE.Vector3(x_partition, y_partition, 0),
+      new THREE.Vector3(x_partition + change_x_partition, y_partition + change_y_partition, 0),
+    )
+    material = new THREE.LineBasicMaterial({ color: 0x77c9f9 })
+    const line = new THREE.Line(geometry, material)
+    line.position.set(xShift, yShift, 0)
+    line.name = 'splitter'
+    scene.add(line)
+
+    setTimeout(() => {
+      if (isPointOnLeftSide(nodeIndex)) {
+        recursive(nodes[nodeIndex].left_child)
+      } else {
+        recursive(nodes[nodeIndex].right_child)
+      }
+    }, 1000)
+  }
+  return recursive
+}
+
+function traverseBspTree ({ nodes, player, xShift, yShift }, scene) {
+  const isPointOnLeftSide = (nodeIndex) => {
+    const dx = player.x - nodes[nodeIndex].x_partition
+    const dy = player.y - nodes[nodeIndex].y_partition
+    return (((dx * nodes[nodeIndex].change_y_partition) - (dy * nodes[nodeIndex].change_x_partition)) <= 0)
+  }
+  const recursive = addNodes({ nodes, xShift, yShift, isPointOnLeftSide }, scene)
+  const startIndex = nodes.length - 1
+  recursive(startIndex)
 }
 
 (async function run () {
   const response = await fetch('./doom1.wad')
   const downloadedMap = await response.arrayBuffer()
-  const map = doom.init(downloadedMap, 'E1M1')
+  const map = doomInit(downloadedMap, 'E1M1')
 
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
@@ -90,10 +123,6 @@ function addNodes ({ nodes, xShift, yShift }, scene) {
   console.log('###', map, xShift, yShift)
 
   const scene = new THREE.Scene()
-
-  addMap({ ...map, xShift, yShift }, scene)
-  addNodes({ ...map, xShift, yShift }, scene)
-  addPlayer({ ...map, xShift, yShift }, scene)
 
   const scale = 0.025
   scene.scale.set(scale, scale, scale)
@@ -116,5 +145,10 @@ function addNodes ({ nodes, xShift, yShift }, scene) {
     requestAnimationFrame(animate)
     renderer.render(scene, camera)
   }
+
+  addMap({ ...map, xShift, yShift }, scene)
+  addPlayer({ ...map, xShift, yShift }, scene)
+  traverseBspTree({ ...map, xShift, yShift }, scene)
+
   animate()
 })()
