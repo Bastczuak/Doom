@@ -30,3 +30,65 @@ const SUB_SECTOR_IDENTIFIER: usize = 0x8000;
 pub fn check_for_sub_sector(node: usize) -> bool {
   node & SUB_SECTOR_IDENTIFIER > 0
 }
+
+use specs::{Builder, Component, ReadStorage, RunNow, System, VecStorage, World, WorldExt};
+
+#[derive(Debug)]
+struct Position {
+  x: f32,
+  y: f32,
+}
+
+impl Component for Position {
+  type Storage = VecStorage<Self>;
+}
+
+struct HelloWorld {
+  callback: js_sys::Function,
+}
+
+impl<'a> System<'a> for HelloWorld {
+  type SystemData = ReadStorage<'a, Position>;
+
+  fn run(&mut self, position: Self::SystemData) {
+    use specs::Join;
+    let this = JsValue::NULL;
+    for position in position.join() {
+      let x = JsValue::from(format!("Hello, {:?}", &position).as_str());
+      self.callback.call1(&this, &x).unwrap();
+    }
+  }
+}
+
+#[wasm_bindgen]
+pub struct Doom {
+  world: World,
+  hello_world: HelloWorld
+}
+
+#[wasm_bindgen]
+impl Doom {
+  pub fn new(callback: js_sys::Function) -> Self {
+    let mut world = World::new();
+    world.register::<Position>();
+    world
+      .create_entity()
+      .with(Position { x: 4.0, y: 7.0 })
+      .build();
+
+    world
+      .create_entity()
+      .with(Position { x: 8.0, y: 8.0 })
+      .build();
+    let mut hello_world = HelloWorld { callback };
+    Doom {
+      world,
+      hello_world
+    }
+  }
+
+  pub fn tick(&mut self) {
+    self.hello_world.run_now(&self.world);
+    self.world.maintain();
+  }
+}

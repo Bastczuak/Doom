@@ -1,4 +1,4 @@
-import { doomInit, checkForSubSector } from 'doom'
+import { doomInit, checkForSubSector, Doom } from 'doom'
 import * as THREE from 'three'
 
 function addPlayer ({ player, xShift, yShift }, scene) {
@@ -113,6 +113,10 @@ function traverseBspTree ({ nodes, player, xShift, yShift }, scene) {
 }
 
 (async function run () {
+  const doom = Doom.new(x => {
+    console.log('@@@', x)
+  })
+  doom.tick()
   const response = await fetch('./doom1.wad')
   const downloadedMap = await response.arrayBuffer()
   const map = doomInit(downloadedMap, 'E1M1')
