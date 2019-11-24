@@ -1,6 +1,6 @@
 use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils::to_i16;
-use crate::wad::map::MapMetaData;
+use crate::wad::{MapMetaData, Wad};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
