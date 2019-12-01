@@ -1,5 +1,5 @@
-use crate::wad::linedef::LineDef;
-use crate::wad::vertex::Vertex;
+use crate::component::linedef::LineDef;
+use crate::component::vertex::Vertex;
 use serde::{Deserialize, Serialize};
 use specs::{Component, VecStorage};
 

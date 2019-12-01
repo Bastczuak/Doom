@@ -1,14 +1,6 @@
-pub(crate) mod linedef;
-mod node;
-mod thing;
-pub(crate) mod vertex;
-
 use crate::datatypes::Result;
 use crate::errors::DoomError;
-use crate::player::Player;
 use crate::utils;
-use crate::wad::node::Node;
-use crate::wad::thing::Thing;
 
 pub trait MapMetaData: Sized {
   fn read(wad: &[u8], offset: usize) -> Result<Self>;

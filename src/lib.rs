@@ -2,17 +2,17 @@ mod component;
 mod datatypes;
 mod entity;
 mod errors;
-mod player;
 mod system;
 mod utils;
 mod wad;
 
 use crate::component::map::Map;
-use crate::entity::create_map;
+use crate::entity::{create_map, create_player};
 use crate::system::map::MapSystem;
+use crate::system::thing::ThingsSystem;
 use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::Wad;
-use specs::{RunNow, World, WorldExt};
+use specs::{RunNow, System, World, WorldExt};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -31,6 +31,7 @@ pub fn check_for_sub_sector(node: usize) -> bool {
 #[wasm_bindgen]
 pub struct Doom {
   wad: Wad,
+  world: World,
 }
 
 #[wasm_bindgen]
@@ -39,14 +40,23 @@ impl Doom {
     set_panic_hook();
     let buffer = to_vec_u8(downloaded_wad);
     let wad = Wad::new(&buffer).map_err(|e| e.to_string())?;
-    Ok(Doom { wad })
+    let world = World::new();
+    Ok(Doom { wad, world })
   }
 
-  pub fn load(&self, map: &str, js_callback: js_sys::Function) {
-    let mut world = specs::World::new();
-    create_map(map, &self.wad, &mut world);
+  #[wasm_bindgen(js_name = "loadMap")]
+  pub fn load_map(&mut self, map: &str, js_callback: js_sys::Function) {
+    create_map(map, &self.wad, &mut self.world);
     let mut map = MapSystem::new(js_callback);
-    map.run_now(&world);
-    world.maintain();
+    map.run_now(&self.world);
+    self.world.maintain();
+  }
+
+  #[wasm_bindgen(js_name = "loadPlayer")]
+  pub fn load_player(&mut self, map: &str, id: u16, js_callback: js_sys::Function) {
+    create_player(map, id, &self.wad, &mut self.world);
+    let mut player = ThingsSystem::new(js_callback);
+    player.run_now(&self.world);
+    self.world.maintain();
   }
 }

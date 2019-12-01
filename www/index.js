@@ -1,13 +1,11 @@
-// import { doomInit, checkForSubSector, Doom } from 'doom'
-//
-// function addPlayer ({ player, xShift, yShift }, scene) {
-//   const geometry = new THREE.CircleGeometry(25, 32)
-//   const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-//   const mesh = new THREE.Mesh(geometry, material)
-//   mesh.position.set(player.x + xShift, player.y + yShift, 0)
-//   scene.add(mesh)
-// }
-//
+function addPlayer ({ x, y, xShift, yShift }, scene) {
+  const geometry = new THREE.CircleGeometry(25, 32)
+  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+  const mesh = new THREE.Mesh(geometry, material)
+  mesh.position.set(x + xShift, y + yShift, 0)
+  scene.add(mesh)
+}
+
 function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   line_defs.forEach(line => {
     const start = vertexes[line.start_vertex]
@@ -188,13 +186,14 @@ import * as THREE from 'three'
 
   const response = await fetch('./doom1.wad')
   const downloadedMap = await response.arrayBuffer()
+  let xShift, yShift
   const doom = Doom.new(downloadedMap)
-  doom.load('E1M1', map => {
-    const xShift = -map.x_min - map.x_max / 2
-    const yShift = -map.y_min + map.y_max / 2
-
-    console.log('###', map, xShift, yShift)
-
+  doom.loadMap('E1M1', map => {
+    xShift = -map.x_min - map.x_max / 2
+    yShift = -map.y_min + map.y_max / 2
     addMap({ ...map, xShift, yShift }, scene)
+  })
+  doom.loadPlayer('E1M1', 1, player => {
+    addPlayer({ ...player, xShift, yShift }, scene)
   })
 })()

@@ -1,8 +1,9 @@
+use crate::component::linedef::LineDef;
 use crate::component::map::Map;
+use crate::component::thing::Thing;
+use crate::component::vertex::Vertex;
 use crate::datatypes::Result;
 use crate::errors::DoomError;
-use crate::wad::linedef::LineDef;
-use crate::wad::vertex::Vertex;
 use crate::wad::Wad;
 use specs::{Builder, Entity, World, WorldExt};
 
@@ -14,6 +15,23 @@ pub fn create_map(map: &str, wad: &Wad, world: &mut World) -> Result<()> {
       let line_defs = wad.read_wad_for::<LineDef>(map_index)?;
       let map = Map::new(vertexes, line_defs);
       world.create_entity().with(map).build();
+      Ok(())
+    }
+
+    None => Err(DoomError::Wad(format!("Failed to load MAP: {}", map))),
+  }
+}
+
+pub fn create_player(map: &str, id: u16, wad: &Wad, world: &mut World) -> Result<()> {
+  match wad.find_map_index(map) {
+    Some(map_index) => {
+      world.register::<Thing>();
+      let things = wad.read_wad_for::<Thing>(map_index)?;
+      for thing in things {
+        if thing.typ == id {
+          world.create_entity().with(thing).build();
+        }
+      }
       Ok(())
     }
 
