@@ -70,7 +70,7 @@ impl Wad {
 
   pub fn find_map_index(&self, name: &str) -> Option<usize> {
     for i in 0..self.directories.len() {
-      if self.directories[i].lump_name == String::from(name) {
+      if self.directories[i].lump_name == name {
         return Some(i);
       }
     }

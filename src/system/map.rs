@@ -1,5 +1,5 @@
 use crate::component::map::Map;
-use specs::{Entities, ReadStorage, System};
+use specs::{ReadStorage, System};
 use wasm_bindgen::JsValue;
 
 pub struct MapSystem {

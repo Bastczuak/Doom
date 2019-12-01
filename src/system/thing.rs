@@ -1,5 +1,5 @@
 use crate::component::thing::Thing;
-use specs::{Entities, ReadStorage, System};
+use specs::{ReadStorage, System};
 use wasm_bindgen::JsValue;
 
 pub struct ThingsSystem {
