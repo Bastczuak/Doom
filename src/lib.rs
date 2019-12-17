@@ -2,15 +2,13 @@ mod component;
 mod datatypes;
 mod entity;
 mod errors;
+mod resource;
 mod system;
 mod utils;
 mod wad;
 
-
-use crate::component::node::Node;
-use crate::entity::{create_map, create_nodes, create_player};
-use crate::system::map::MapSystem;
-use crate::system::node::NodeSystem;
+use crate::entity::create_player;
+use crate::resource::{create_map, create_nodes};
 use crate::system::thing::ThingsSystem;
 use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::Wad;
@@ -47,12 +45,11 @@ impl Doom {
   }
 
   #[wasm_bindgen(js_name = "loadMap")]
-  pub fn load_map(&mut self, map: &str, js_callback: js_sys::Function) -> Result<(), JsValue> {
-    create_map(map, &self.wad, &mut self.world).map_err(|e| e.to_string())?;
-    let mut map = MapSystem::new(js_callback);
-    map.run_now(&self.world);
-    self.world.maintain();
-    Ok(())
+  pub fn load_map(&mut self, map: &str) -> Result<JsValue, JsValue> {
+    let map = create_map(map, &self.wad).map_err(|e| e.to_string())?;
+    let js_value = JsValue::from_serde(&map).unwrap();
+    self.world.insert(map);
+    Ok(js_value)
   }
 
   #[wasm_bindgen(js_name = "loadPlayer")]
@@ -70,15 +67,10 @@ impl Doom {
   }
 
   #[wasm_bindgen(js_name = "loadNodes")]
-  pub fn load_nodes(&mut self, map: &str, js_callback: js_sys::Function) -> Result<JsValue, JsValue> {
-    create_nodes(map, &self.wad, &mut self.world).map_err(|e| e.to_string())?;
-    let mut nodes = NodeSystem::new(js_callback);
-    nodes.run_now(&self.world);
-    self.world.maintain();
-    use specs::Join;
-    let a = self.world.read_storage::<Node>();
-    let nodes: Vec<&Node> = a.join().collect();
-    let a = JsValue::from_serde(&nodes).unwrap();
-    Ok(a)
+  pub fn load_nodes(&mut self, map: &str) -> Result<JsValue, JsValue> {
+    let nodes = create_nodes(map, &self.wad).map_err(|e| e.to_string())?;
+    let js_value = JsValue::from_serde(&nodes).unwrap();
+    self.world.insert(nodes);
+    Ok(js_value)
   }
 }

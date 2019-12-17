@@ -110,6 +110,7 @@ function traverseBspTree ({ nodes, player, xShift, yShift }, scene) {
   const startIndex = nodes.length - 1
   recursive(startIndex)
 }
+
 (async function run () {
   const scene = new THREE.Scene()
   const scale = 0.025
@@ -129,29 +130,27 @@ function traverseBspTree ({ nodes, player, xShift, yShift }, scene) {
     renderer.setSize(window.innerWidth, window.innerHeight)
   }, false)
 
-  const response = await fetch('./doom1.wad')
-  const downloadedMap = await response.arrayBuffer()
-  let xShift, yShift, player
-  const doom = Doom.new(downloadedMap)
-  doom.loadMap('E1M1', map => {
-    xShift = -map.x_min - map.x_max / 2
-    yShift = -map.y_min + map.y_max / 2
-    addMap({ ...map, xShift, yShift }, scene)
-  })
-  doom.loadPlayer('E1M1', 1, p => {
-    player = p
-    addPlayer({ ...player, xShift, yShift }, scene)
-  })
-  const a = doom.loadNodes('E1M1', nodes => {
-    traverseBspTree({nodes, player, xShift, yShift}, scene)
-  })
-  
-  console.log('3###', a)
-
   const animate = () => {
     requestAnimationFrame(animate)
     renderer.render(scene, camera)
   }
+
+  const response = await fetch('./doom1.wad')
+  const downloadedMap = await response.arrayBuffer()
+
+  const doom = Doom.new(downloadedMap)
+
+  const map = doom.loadMap('E1M1')
+  const xShift = -map.x_min - map.x_max / 2
+  const yShift = -map.y_min + map.y_max / 2
+  addMap({ ...map, xShift, yShift }, scene)
+
+  const nodes = doom.loadNodes('E1M1')
+
+  doom.loadPlayer('E1M1', 1, player => {
+    addPlayer({ ...player, xShift, yShift }, scene)
+    traverseBspTree({ nodes, player, xShift, yShift }, scene)
+  })
 
   animate()
 })()

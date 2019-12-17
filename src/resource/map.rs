@@ -1,7 +1,6 @@
-use crate::component::linedef::LineDef;
-use crate::component::vertex::Vertex;
+use crate::resource::linedef::LineDef;
+use crate::resource::vertex::Vertex;
 use serde::{Deserialize, Serialize};
-use specs::{Component, VecStorage};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
@@ -42,8 +41,4 @@ impl Map {
       }
     }
   }
-}
-
-impl Component for Map {
-  type Storage = VecStorage<Self>;
 }
