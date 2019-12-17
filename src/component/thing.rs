@@ -1,6 +1,6 @@
 use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils::{to_i16, to_u16};
-use crate::wad::MapMetaData;
+use crate::wad::WadMetaData;
 use serde::{Deserialize, Serialize};
 use specs::{Component, VecStorage};
 
@@ -13,7 +13,7 @@ pub struct Thing {
   pub flags: u16,
 }
 
-impl MapMetaData for Thing {
+impl WadMetaData for Thing {
   fn read(wad: &[u8], offset: usize) -> Result<Self> {
     let x = to_i16(wad, offset)?;
     let y = to_i16(wad, offset + 2)?;

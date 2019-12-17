@@ -2,7 +2,7 @@ use crate::datatypes::Result;
 use crate::errors::DoomError;
 use crate::utils;
 
-pub trait MapMetaData: Sized {
+pub trait WadMetaData: Sized {
   fn read(wad: &[u8], offset: usize) -> Result<Self>;
   fn lump_name() -> String;
   fn size_in_bytes() -> u32;
@@ -77,7 +77,7 @@ impl Wad {
     None
   }
 
-  pub fn read_wad_for<T: MapMetaData>(&self, map_index: usize) -> Result<Vec<T>> {
+  pub fn read_wad_for<T: WadMetaData>(&self, map_index: usize) -> Result<Vec<T>> {
     let index = map_index + T::index();
 
     if self.directories[index].lump_name != T::lump_name() {
@@ -90,7 +90,7 @@ impl Wad {
 
     let mut vec = Vec::new();
     for i in 0..self.directories[index].lump_size / T::size_in_bytes() {
-      let data = MapMetaData::read(
+      let data = WadMetaData::read(
         &self.wad,
         (self.directories[index].lump_offset + i * T::size_in_bytes()) as usize,
       )?;

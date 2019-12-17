@@ -1,6 +1,6 @@
 use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils::{to_i16, to_u16};
-use crate::wad::MapMetaData;
+use crate::wad::WadMetaData;
 use serde::{Deserialize, Serialize};
 use specs::{Component, VecStorage};
 
@@ -22,7 +22,7 @@ pub struct Node {
   left_child: u16,  // back
 }
 
-impl MapMetaData for Node {
+impl WadMetaData for Node {
   fn read(wad: &[u8], offset: usize) -> Result<Self> {
     let x_partition = to_i16(wad, offset)?;
     let y_partition = to_i16(wad, offset + 2)?;

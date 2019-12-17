@@ -1,6 +1,6 @@
 use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils::to_u16;
-use crate::wad::MapMetaData;
+use crate::wad::WadMetaData;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,7 +14,7 @@ pub struct LineDef {
   pub back_side_def: u16,
 }
 
-impl MapMetaData for LineDef {
+impl WadMetaData for LineDef {
   fn read(wad: &[u8], offset: usize) -> Result<Self> {
     let start_vertex = to_u16(wad, offset)?;
     let end_vertex = to_u16(wad, offset + 2)?;

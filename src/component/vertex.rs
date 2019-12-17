@@ -1,6 +1,6 @@
 use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils::to_i16;
-use crate::wad::MapMetaData;
+use crate::wad::WadMetaData;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -9,7 +9,7 @@ pub struct Vertex {
   pub y: i16,
 }
 
-impl MapMetaData for Vertex {
+impl WadMetaData for Vertex {
   fn read(wad: &[u8], offset: usize) -> Result<Vertex> {
     let x = to_i16(wad, offset)?;
     let y = to_i16(wad, offset + 2)?;
