@@ -1,5 +1,6 @@
 use crate::component::linedef::LineDef;
 use crate::component::map::Map;
+use crate::component::node::Node;
 use crate::component::thing::Thing;
 use crate::component::vertex::Vertex;
 use crate::datatypes::Result;
@@ -35,6 +36,20 @@ pub fn create_player(map: &str, id: u16, wad: &Wad, world: &mut World) -> Result
       Ok(())
     }
 
+    None => Err(DoomError::Wad(format!("Failed to load MAP: {}", map))),
+  }
+}
+
+pub fn create_nodes(map: &str, wad: &Wad, world: &mut World) -> Result<()> {
+  match wad.find_map_index(map) {
+    Some(map_index) => {
+      world.register::<Node>();
+      let nodes = wad.read_wad_for::<Node>(map_index)?;
+      for node in nodes {
+        world.create_entity().with(node).build();
+      }
+      Ok(())
+    }
     None => Err(DoomError::Wad(format!("Failed to load MAP: {}", map))),
   }
 }

@@ -2,6 +2,7 @@ use crate::datatypes::{MapLumpsIndex, Result};
 use crate::utils::{to_i16, to_u16};
 use crate::wad::MapMetaData;
 use serde::{Deserialize, Serialize};
+use specs::{Component, VecStorage};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Node {
@@ -66,4 +67,8 @@ impl MapMetaData for Node {
   fn index() -> usize {
     MapLumpsIndex::NODES as usize
   }
+}
+
+impl Component for Node {
+  type Storage = VecStorage<Self>;
 }
