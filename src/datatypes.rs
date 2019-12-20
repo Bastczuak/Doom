@@ -5,7 +5,7 @@ pub enum MapLumpsIndex {
   LINEDEFS,
   SIDEDEFS,
   VERTEXES,
-  SEAGS,
+  SEGS,
   SSECTORS,
   NODES,
   SECTORS,

@@ -1,4 +1,4 @@
-import { Doom, checkForSubSector } from 'doom'
+import { Doom, checkForSubSector, getSubSector } from 'doom'
 import * as THREE from 'three'
 
 function addPlayer ({ x, y, xShift, yShift }, scene) {
@@ -25,9 +25,11 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   })
 }
 
-function addNodes ({ nodes, xShift, yShift, isPointOnLeftSide }, scene) {
+function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnLeftSide }, scene) {
   const recursive = (nodeIndex) => {
     if (checkForSubSector(nodeIndex)) {
+      const ssector = ssectors[getSubSector(nodeIndex)]
+      traverseSectors({ segs, ssector, vertexes, yShift, xShift }, scene)
       return
     }
 
@@ -91,8 +93,10 @@ function addNodes ({ nodes, xShift, yShift, isPointOnLeftSide }, scene) {
 
     setTimeout(() => {
       if (isPointOnLeftSide(nodeIndex)) {
+        recursive(nodes[nodeIndex].right_child)
         recursive(nodes[nodeIndex].left_child)
       } else {
+        recursive(nodes[nodeIndex].left_child)
         recursive(nodes[nodeIndex].right_child)
       }
     }, 1000)
@@ -100,15 +104,32 @@ function addNodes ({ nodes, xShift, yShift, isPointOnLeftSide }, scene) {
   return recursive
 }
 
-function traverseBspTree ({ nodes, player, xShift, yShift }, scene) {
+function traverseBspTree ({ nodes, player, xShift, yShift, segs, ssectors, vertexes }, scene) {
   const isPointOnLeftSide = (nodeIndex) => {
     const dx = player.x - nodes[nodeIndex].x_partition
     const dy = player.y - nodes[nodeIndex].y_partition
     return (((dx * nodes[nodeIndex].change_y_partition) - (dy * nodes[nodeIndex].change_x_partition)) <= 0)
   }
-  const recursive = addNodes({ nodes, xShift, yShift, isPointOnLeftSide }, scene)
+  const recursive = addNodes({ nodes, xShift, yShift, isPointOnLeftSide, segs, ssectors, vertexes }, scene)
   const startIndex = nodes.length - 1
   recursive(startIndex)
+}
+
+function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
+  for (let i = 0; i < ssector.seg_count; i++) {
+    const seg = segs[ssector.first_seg + i]
+    const start = vertexes[seg.start_vertex]
+    const end = vertexes[seg.end_vertex]
+    const geometry = new THREE.Geometry()
+    geometry.vertices.push(
+      new THREE.Vector3(start.x, start.y, 0),
+      new THREE.Vector3(end.x, end.y, 0),
+    )
+    const material = new THREE.LineBasicMaterial({ color:  0xff0000 })
+    const l = new THREE.Line(geometry, material)
+    l.position.set(xShift, yShift, 0)
+    scene.add(l)
+  }
 }
 
 (async function run () {
@@ -146,10 +167,12 @@ function traverseBspTree ({ nodes, player, xShift, yShift }, scene) {
   addMap({ ...map, xShift, yShift }, scene)
 
   const nodes = doom.loadNodes('E1M1')
+  const segs = doom.loadSegs('E1M1')
+  const ssectors = doom.loadSSectors('E1M1')
 
   doom.loadPlayer('E1M1', 1, player => {
     addPlayer({ ...player, xShift, yShift }, scene)
-    traverseBspTree({ nodes, player, xShift, yShift }, scene)
+    traverseBspTree({ nodes, segs, ssectors, player, xShift, yShift, ...map }, scene)
   })
 
   animate()
