@@ -25,8 +25,12 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   })
 }
 
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnLeftSide }, scene) {
-  const recursive = (nodeIndex) => {
+  const recursive = async (nodeIndex) => {
     if (checkForSubSector(nodeIndex)) {
       const ssector = ssectors[getSubSector(nodeIndex)]
       traverseSectors({ segs, ssector, vertexes, yShift, xShift }, scene)
@@ -91,20 +95,20 @@ function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnL
     line.name = 'splitter'
     scene.add(line)
 
-    setTimeout(() => {
-      if (isPointOnLeftSide(nodeIndex)) {
-        recursive(nodes[nodeIndex].right_child)
-        recursive(nodes[nodeIndex].left_child)
-      } else {
-        recursive(nodes[nodeIndex].left_child)
-        recursive(nodes[nodeIndex].right_child)
-      }
-    }, 1000)
+    await sleep(100)
+
+    if (isPointOnLeftSide(nodeIndex)) {
+      await recursive(nodes[nodeIndex].left_child)
+      await recursive(nodes[nodeIndex].right_child)
+    } else {
+      await recursive(nodes[nodeIndex].right_child)
+      await recursive(nodes[nodeIndex].left_child)
+    }
   }
   return recursive
 }
 
-function traverseBspTree ({ nodes, player, xShift, yShift, segs, ssectors, vertexes }, scene) {
+async function traverseBspTree ({ nodes, player, xShift, yShift, segs, ssectors, vertexes }, scene) {
   const isPointOnLeftSide = (nodeIndex) => {
     const dx = player.x - nodes[nodeIndex].x_partition
     const dy = player.y - nodes[nodeIndex].y_partition
@@ -112,7 +116,7 @@ function traverseBspTree ({ nodes, player, xShift, yShift, segs, ssectors, verte
   }
   const recursive = addNodes({ nodes, xShift, yShift, isPointOnLeftSide, segs, ssectors, vertexes }, scene)
   const startIndex = nodes.length - 1
-  recursive(startIndex)
+  await recursive(startIndex)
 }
 
 function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
@@ -125,7 +129,7 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
       new THREE.Vector3(start.x, start.y, 0),
       new THREE.Vector3(end.x, end.y, 0),
     )
-    const material = new THREE.LineBasicMaterial({ color:  0xff0000 })
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 })
     const l = new THREE.Line(geometry, material)
     l.position.set(xShift, yShift, 0)
     scene.add(l)
