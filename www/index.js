@@ -93,8 +93,8 @@ function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnL
 
     setTimeout(() => {
       if (isPointOnLeftSide(nodeIndex)) {
-        recursive(nodes[nodeIndex].left_child)
         recursive(nodes[nodeIndex].right_child)
+        recursive(nodes[nodeIndex].left_child)
       } else {
         recursive(nodes[nodeIndex].left_child)
         recursive(nodes[nodeIndex].right_child)
@@ -156,7 +156,7 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
     renderer.render(scene, camera)
   }
 
-  const response = await fetch('./doom1.wad')
+  const response = await fetch('./doomu.wad')
   const downloadedMap = await response.arrayBuffer()
 
   const doom = Doom.new(downloadedMap)
