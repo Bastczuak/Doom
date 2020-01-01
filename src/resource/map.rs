@@ -1,4 +1,7 @@
 use crate::resource::linedef::LineDef;
+use crate::resource::node::Node;
+use crate::resource::seg::Seg;
+use crate::resource::ssector::SSector;
 use crate::resource::vertex::Vertex;
 use serde::{Deserialize, Serialize};
 
@@ -6,6 +9,9 @@ use serde::{Deserialize, Serialize};
 pub struct Map {
   vertexes: Vec<Vertex>,
   line_defs: Vec<LineDef>,
+  nodes: Vec<Node>,
+  segs: Vec<Seg>,
+  ssectors: Vec<SSector>,
   x_min: i16,
   x_max: i16,
   y_min: i16,
@@ -13,10 +19,19 @@ pub struct Map {
 }
 
 impl Map {
-  pub fn new(vertexes: Vec<Vertex>, line_defs: Vec<LineDef>) -> Self {
+  pub fn new(
+    vertexes: Vec<Vertex>,
+    line_defs: Vec<LineDef>,
+    nodes: Vec<Node>,
+    segs: Vec<Seg>,
+    ssectors: Vec<SSector>,
+  ) -> Self {
     let mut map = Map {
       vertexes,
       line_defs,
+      nodes,
+      segs,
+      ssectors,
       x_min: std::i16::MAX,
       x_max: std::i16::MIN,
       y_min: std::i16::MAX,

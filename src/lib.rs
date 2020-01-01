@@ -8,7 +8,7 @@ mod utils;
 mod wad;
 
 use crate::entity::create_player;
-use crate::resource::{create_map, create_nodes, create_segs, create_ssectors};
+use crate::resource::create_map;
 use crate::system::thing::ThingsSystem;
 use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::Wad;
@@ -69,29 +69,5 @@ impl Doom {
     player.run_now(&self.world);
     self.world.maintain();
     Ok(())
-  }
-
-  #[wasm_bindgen(js_name = "loadNodes")]
-  pub fn load_nodes(&mut self, map: &str) -> Result<JsValue, JsValue> {
-    let nodes = create_nodes(map, &self.wad).map_err(|e| e.to_string())?;
-    let js_value = JsValue::from_serde(&nodes).unwrap();
-    self.world.insert(nodes);
-    Ok(js_value)
-  }
-
-  #[wasm_bindgen(js_name = "loadSegs")]
-  pub fn load_segs(&mut self, map: &str) -> Result<JsValue, JsValue> {
-    let segs = create_segs(map, &self.wad).map_err(|e| e.to_string())?;
-    let js_value = JsValue::from_serde(&segs).unwrap();
-    self.world.insert(segs);
-    Ok(js_value)
-  }
-
-  #[wasm_bindgen(js_name = "loadSSectors")]
-  pub fn load_ssectors(&mut self, map: &str) -> Result<JsValue, JsValue> {
-    let ssectors = create_ssectors(map, &self.wad).map_err(|e| e.to_string())?;
-    let js_value = JsValue::from_serde(&ssectors).unwrap();
-    self.world.insert(ssectors);
-    Ok(js_value)
   }
 }

@@ -93,8 +93,8 @@ function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnL
 
     setTimeout(() => {
       if (isPointOnLeftSide(nodeIndex)) {
-        recursive(nodes[nodeIndex].right_child)
         recursive(nodes[nodeIndex].left_child)
+        recursive(nodes[nodeIndex].right_child)
       } else {
         recursive(nodes[nodeIndex].left_child)
         recursive(nodes[nodeIndex].right_child)
@@ -166,13 +166,9 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
   const yShift = -map.y_min + map.y_max / 2
   addMap({ ...map, xShift, yShift }, scene)
 
-  const nodes = doom.loadNodes('E1M1')
-  const segs = doom.loadSegs('E1M1')
-  const ssectors = doom.loadSSectors('E1M1')
-
   doom.loadPlayer('E1M1', 1, player => {
     addPlayer({ ...player, xShift, yShift }, scene)
-    traverseBspTree({ nodes, segs, ssectors, player, xShift, yShift, ...map }, scene)
+    traverseBspTree({ player, xShift, yShift, ...map }, scene)
   })
 
   animate()
