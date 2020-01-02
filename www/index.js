@@ -129,7 +129,7 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
       new THREE.Vector3(start.x, start.y, 0),
       new THREE.Vector3(end.x, end.y, 0),
     )
-    const material = new THREE.LineBasicMaterial({ color: 0xff0000 })
+    const material = new THREE.LineBasicMaterial({ color: 0xffc0cb })
     const l = new THREE.Line(geometry, material)
     l.position.set(xShift, yShift, 0)
     scene.add(l)
