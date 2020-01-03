@@ -1,3 +1,4 @@
+pub(crate) mod angle;
 pub(crate) mod linedef;
 pub(crate) mod map;
 pub(crate) mod node;
