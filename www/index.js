@@ -2,12 +2,25 @@ import { Doom, checkForSubSector, getSubSector } from 'doom'
 import * as THREE from 'three'
 
 function addPlayer ({ x, y, xShift, yShift }, scene) {
+  const player = scene.getObjectByName('player')
+  if (player) {
+    player.position.set(x + xShift, y + yShift, 0)
+    return
+  }
+
   const geometry = new THREE.CircleGeometry(25, 32)
   const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
   const mesh = new THREE.Mesh(geometry, material)
   mesh.position.set(x + xShift, y + yShift, 0)
+  mesh.name = 'player'
   scene.add(mesh)
 }
+
+let pressedKey = ''
+
+document.addEventListener('keydown', e => {
+  pressedKey = e.key
+})
 
 function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   line_defs.forEach(line => {
@@ -155,11 +168,6 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
     renderer.setSize(window.innerWidth, window.innerHeight)
   }, false)
 
-  const animate = () => {
-    requestAnimationFrame(animate)
-    renderer.render(scene, camera)
-  }
-
   const response = await fetch('./doomu.wad')
   const downloadedMap = await response.arrayBuffer()
 
@@ -169,11 +177,14 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
   addMap({ ...map, xShift, yShift }, scene)
+  doom.loadPlayer('E1M1', 1)
 
-  doom.loadPlayer('E1M1', 1, player => {
-    addPlayer({ ...player, xShift, yShift }, scene)
-    traverseBspTree({ player, xShift, yShift, ...map }, scene)
-  })
-
+  const animate = () => {
+    const entities = doom.tick(pressedKey)
+    addPlayer({ ...entities[0], xShift, yShift }, scene)
+    renderer.render(scene, camera)
+    pressedKey = ""
+    requestAnimationFrame(animate)
+  }
   animate()
 })()
