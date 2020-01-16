@@ -1,8 +1,8 @@
-use crate::resource::linedef::LineDef;
-use crate::resource::node::Node;
-use crate::resource::seg::Seg;
-use crate::resource::ssector::SSector;
-use crate::resource::vertex::Vertex;
+use crate::wad::linedef::LineDef;
+use crate::wad::node::Node;
+use crate::wad::seg::Seg;
+use crate::wad::ssector::SSector;
+use crate::wad::vertex::Vertex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -118,7 +118,7 @@ impl cmp::PartialOrd<f32> for Angle {
 
 #[cfg(test)]
 mod tests {
-  use crate::resource::angle::Angle;
+  use crate::wad::angle::Angle;
 
   #[test]
   fn overload_add() {

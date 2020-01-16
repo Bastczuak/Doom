@@ -1,3 +1,11 @@
+pub(crate) mod linedef;
+pub(crate) mod map;
+pub(crate) mod node;
+pub(crate) mod seg;
+pub(crate) mod ssector;
+pub(crate) mod vertex;
+pub(crate) mod thing;
+
 use crate::datatypes::Result;
 use crate::errors::DoomError;
 use crate::utils;

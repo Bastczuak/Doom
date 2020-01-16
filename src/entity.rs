@@ -2,7 +2,7 @@ use crate::datatypes::Result;
 use crate::errors::DoomError;
 use crate::wad::Wad;
 use specs::{Builder, World, WorldExt};
-use crate::resource::thing::Thing;
+use crate::wad::thing::Thing;
 use crate::component::{KeyboardControlled, Position, Velocity, Direction};
 
 pub fn create_player(map: &str, id: u16, wad: &Wad, world: &mut World) -> Result<()> {

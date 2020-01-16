@@ -2,9 +2,9 @@ mod component;
 mod datatypes;
 mod entity;
 mod errors;
-mod resource;
 mod system;
 mod utils;
+mod resource;
 mod wad;
 
 use crate::entity::create_player;
@@ -35,6 +35,9 @@ pub fn get_sub_sector(node: usize) -> usize {
   node & !SUB_SECTOR_IDENTIFIER
 }
 
+
+// TODO: everytime the player moves we uopdate which segs should be rendered
+
 #[wasm_bindgen]
 pub struct Doom {
   wad: Wad,
@@ -58,25 +61,23 @@ impl Doom {
 
   #[wasm_bindgen]
   pub fn tick(&mut self, events: &str) -> Result<JsValue, JsValue> {
-    let mut movement_command : Option<MovementCommand> = None;
     match events {
       "a" => {
-        movement_command = Some(MovementCommand::Move(Direction::Left))
+        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Left))
       }
       "d" => {
-        movement_command = Some(MovementCommand::Move(Direction::Right))
+        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Right))
       }
       "w" => {
-        movement_command = Some(MovementCommand::Move(Direction::Up))
+        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Up))
       }
       "s" => {
-        movement_command = Some(MovementCommand::Move(Direction::Down))
+        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Down))
       }
       _ => {
-        movement_command = Some(MovementCommand::Stop)
+        *self.world.write_resource() = Some(MovementCommand::Stop)
       }
     }
-    *self.world.write_resource() = movement_command;
     self.run_systems();
 
     let position_storage = self.world.read_storage::<Position>();
