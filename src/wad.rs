@@ -1,5 +1,4 @@
 pub(crate) mod linedef;
-pub(crate) mod map;
 pub(crate) mod node;
 pub(crate) mod seg;
 pub(crate) mod ssector;

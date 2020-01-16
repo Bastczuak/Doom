@@ -6,6 +6,7 @@ mod system;
 mod utils;
 mod resource;
 mod wad;
+mod map;
 
 use crate::entity::create_player;
 use crate::resource::create_map;
