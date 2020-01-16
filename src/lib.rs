@@ -41,7 +41,7 @@ pub fn get_sub_sector(node: usize) -> usize {
 #[wasm_bindgen]
 pub struct Doom {
   wad: Wad,
-  world: World,
+  ecs: World,
 }
 
 #[wasm_bindgen]
@@ -50,54 +50,54 @@ impl Doom {
     set_panic_hook();
     let buffer = to_vec_u8(downloaded_wad);
     let wad = Wad::new(&buffer).map_err(|e| e.to_string())?;
-    let mut world = World::new();
-    world.register::<KeyboardControlled>();
-    world.register::<Position>();
-    world.register::<Velocity>();
+    let mut ecs = World::new();
+    ecs.register::<KeyboardControlled>();
+    ecs.register::<Position>();
+    ecs.register::<Velocity>();
     let movement_command: Option<MovementCommand> = None;
-    world.insert(movement_command);
-    Ok(Doom { wad, world })
+    ecs.insert(movement_command);
+    Ok(Doom { wad, ecs })
   }
 
   #[wasm_bindgen]
   pub fn tick(&mut self, events: &str) -> Result<JsValue, JsValue> {
     match events {
       "a" => {
-        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Left))
+        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Left))
       }
       "d" => {
-        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Right))
+        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Right))
       }
       "w" => {
-        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Up))
+        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Up))
       }
       "s" => {
-        *self.world.write_resource() = Some(MovementCommand::Move(Direction::Down))
+        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Down))
       }
       _ => {
-        *self.world.write_resource() = Some(MovementCommand::Stop)
+        *self.ecs.write_resource() = Some(MovementCommand::Stop)
       }
     }
     self.run_systems();
 
-    let position_storage = self.world.read_storage::<Position>();
+    let position_storage = self.ecs.read_storage::<Position>();
     let positions: Vec<&Position> = position_storage.join().collect();
     Ok(JsValue::from_serde(&positions).unwrap())
   }
 
   fn run_systems(&mut self) {
     let mut keyboard = Keyboard {};
-    keyboard.run_now(&self.world);
+    keyboard.run_now(&self.ecs);
     let mut physics = Physics {};
-    physics.run_now(&self.world);
-    self.world.maintain();
+    physics.run_now(&self.ecs);
+    self.ecs.maintain();
   }
 
   #[wasm_bindgen(js_name = "loadMap")]
   pub fn load_map(&mut self, map: &str) -> Result<JsValue, JsValue> {
     let map = create_map(map, &self.wad).map_err(|e| e.to_string())?;
     let js_value = JsValue::from_serde(&map).unwrap();
-    self.world.insert(map);
+    self.ecs.insert(map);
     Ok(js_value)
   }
 
@@ -107,7 +107,7 @@ impl Doom {
     map: &str,
     id: u16,
   ) -> Result<(), JsValue> {
-    create_player(map, id, &self.wad, &mut self.world).map_err(|e| e.to_string())?;
+    create_player(map, id, &self.wad, &mut self.ecs).map_err(|e| e.to_string())?;
     Ok(())
   }
 }
