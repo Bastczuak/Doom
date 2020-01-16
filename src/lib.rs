@@ -55,8 +55,6 @@ impl Doom {
     ecs.register::<KeyboardControlled>();
     ecs.register::<Position>();
     ecs.register::<Velocity>();
-    let movement_command: Option<MovementCommand> = None;
-    ecs.insert(movement_command);
     Ok(Doom { wad, ecs })
   }
 
@@ -96,7 +94,7 @@ impl Doom {
 
   #[wasm_bindgen(js_name = "loadMap")]
   pub fn load_map(&mut self, map: &str) -> Result<JsValue, JsValue> {
-    let map = create_map(map, &self.wad).map_err(|e| e.to_string())?;
+    let map = create_map(map, &self.wad, &mut self.ecs).map_err(|e| e.to_string())?;
     let js_value = JsValue::from_serde(&map).unwrap();
     self.ecs.insert(map);
     Ok(js_value)
@@ -108,6 +106,8 @@ impl Doom {
     map: &str,
     id: u16,
   ) -> Result<(), JsValue> {
+    let movement_command: Option<MovementCommand> = None;
+    self.ecs.insert(movement_command);
     create_player(map, id, &self.wad, &mut self.ecs).map_err(|e| e.to_string())?;
     Ok(())
   }
