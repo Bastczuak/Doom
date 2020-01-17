@@ -13,10 +13,7 @@ pub struct Map {
 }
 
 impl Map {
-  pub fn new(
-    vertexes: Vec<Vertex>,
-    line_defs: Vec<LineDef>,
-  ) -> Self {
+  pub fn new(vertexes: Vec<Vertex>, line_defs: Vec<LineDef>) -> Self {
     let mut map = Map {
       vertexes,
       line_defs,

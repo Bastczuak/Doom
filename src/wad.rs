@@ -2,8 +2,8 @@ pub(crate) mod linedef;
 pub(crate) mod node;
 pub(crate) mod seg;
 pub(crate) mod ssector;
-pub(crate) mod vertex;
 pub(crate) mod thing;
+pub(crate) mod vertex;
 
 use crate::datatypes::Result;
 use crate::errors::DoomError;

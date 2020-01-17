@@ -1,11 +1,11 @@
 use crate::datatypes::Result;
 use crate::errors::DoomError;
-use crate::wad::Wad;
 use crate::map::Map;
-use specs::{World, WorldExt};
 use crate::wad::node::Node;
 use crate::wad::seg::Seg;
 use crate::wad::ssector::SSector;
+use crate::wad::Wad;
+use specs::{World, WorldExt};
 
 pub fn create_map(map: &str, wad: &Wad, ecs: &mut World) -> Result<Map> {
   match wad.find_map_index(map) {

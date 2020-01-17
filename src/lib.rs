@@ -2,21 +2,21 @@ mod component;
 mod datatypes;
 mod entity;
 mod errors;
+mod map;
+mod resource;
 mod system;
 mod utils;
-mod resource;
 mod wad;
-mod map;
 
+use crate::component::{Direction, KeyboardControlled, MovementCommand, Position, Velocity};
 use crate::entity::create_player;
 use crate::resource::create_map;
+use crate::system::keyboard::Keyboard;
+use crate::system::physics::Physics;
 use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::Wad;
 use specs::prelude::*;
 use wasm_bindgen::prelude::*;
-use crate::system::keyboard::Keyboard;
-use crate::component::{MovementCommand, Direction, Position, Velocity, KeyboardControlled};
-use crate::system::physics::Physics;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -35,7 +35,6 @@ pub fn check_for_sub_sector(node: usize) -> bool {
 pub fn get_sub_sector(node: usize) -> usize {
   node & !SUB_SECTOR_IDENTIFIER
 }
-
 
 // TODO: everytime the player moves we uopdate which segs should be rendered
 
@@ -61,21 +60,11 @@ impl Doom {
   #[wasm_bindgen]
   pub fn tick(&mut self, events: &str) -> Result<JsValue, JsValue> {
     match events {
-      "a" => {
-        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Left))
-      }
-      "d" => {
-        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Right))
-      }
-      "w" => {
-        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Up))
-      }
-      "s" => {
-        *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Down))
-      }
-      _ => {
-        *self.ecs.write_resource() = Some(MovementCommand::Stop)
-      }
+      "a" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Left)),
+      "d" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Right)),
+      "w" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Up)),
+      "s" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Down)),
+      _ => *self.ecs.write_resource() = Some(MovementCommand::Stop),
     }
     self.run_systems();
 
@@ -101,11 +90,7 @@ impl Doom {
   }
 
   #[wasm_bindgen(js_name = "loadPlayer")]
-  pub fn load_player(
-    &mut self,
-    map: &str,
-    id: u16,
-  ) -> Result<(), JsValue> {
+  pub fn load_player(&mut self, map: &str, id: u16) -> Result<(), JsValue> {
     let movement_command: Option<MovementCommand> = None;
     self.ecs.insert(movement_command);
     create_player(map, id, &self.wad, &mut self.ecs).map_err(|e| e.to_string())?;

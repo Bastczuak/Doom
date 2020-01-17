@@ -1,7 +1,6 @@
+use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs_derive::Component;
-use serde::{Deserialize, Serialize};
-
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum Direction {
@@ -31,5 +30,5 @@ pub struct Position {
 #[storage(VecStorage)]
 pub struct Velocity {
   pub speed: i16,
-  pub direction: Direction
+  pub direction: Direction,
 }
