@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::cmp;
 use std::cmp::Ordering;
 use std::ops;
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Angle(f32);
@@ -33,6 +33,14 @@ impl ops::Add for Angle {
   }
 }
 
+//impl<'a, 'b> ops::Add<&'b Angle> for &'a Angle {
+//  type Output = Angle;
+//
+//  fn add(self, rhs: &'b Angle) -> Self::Output {
+//    Angle::new(self.0 + rhs.0)
+//  }
+//}
+
 impl ops::Add<f32> for Angle {
   type Output = Self;
 
@@ -47,6 +55,18 @@ impl ops::AddAssign for Angle {
   }
 }
 
+//impl<'a, 'b> ops::AddAssign<&'b Angle> for &'a mut Angle {
+//  fn add_assign(&mut self, rhs: &'b Angle) {
+//    **self = Angle::new(self.0 + rhs.0)
+//  }
+//}
+
+//impl <'a> ops::AddAssign<Angle> for &'a mut Angle {
+//  fn add_assign(&mut self, rhs: Angle) {
+//    **self = Angle::new(self.0 + rhs.0)
+//  }
+//}
+
 impl ops::AddAssign<f32> for Angle {
   fn add_assign(&mut self, rhs: f32) {
     *self = Self::new(self.0 + rhs)
@@ -60,6 +80,14 @@ impl ops::Sub for Angle {
     Self::new(self.0 - rhs.0)
   }
 }
+
+//impl<'a, 'b> ops::Sub<&'b Angle> for &'a Angle {
+//  type Output = Angle;
+//
+//  fn sub(self, rhs: &'b Angle) -> Self::Output {
+//    Angle::new(self.0 - rhs.0)
+//  }
+//}
 
 impl ops::Sub<f32> for Angle {
   type Output = Self;
@@ -80,6 +108,12 @@ impl ops::SubAssign<f32> for Angle {
     *self = Self::new(self.0 - rhs)
   }
 }
+
+//impl<'a, 'b> ops::SubAssign<&'b Angle> for &'a mut Angle {
+//  fn sub_assign(&mut self, rhs: &'b Angle) {
+//    **self = Angle::new(self.0 - rhs.0)
+//  }
+//}
 
 impl ops::Neg for Angle {
   type Output = Self;
@@ -175,7 +209,7 @@ mod tests {
 
   #[test]
   fn overload_neg() {
-    let mut angle = Angle::new(45.0);
+    let angle = Angle::new(45.0);
     assert_eq!(-angle, 315.0);
   }
 
