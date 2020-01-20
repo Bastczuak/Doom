@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs_derive::Component;
+use crate::angle::Angle;
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
 pub enum Direction {
   Up,
   Down,
@@ -12,6 +13,11 @@ pub enum Direction {
 
 pub enum MovementCommand {
   Move(Direction),
+  Stop,
+}
+
+pub enum RotationCommand {
+  Rotate(Direction),
   Stop,
 }
 
@@ -31,4 +37,12 @@ pub struct Position {
 pub struct Velocity {
   pub speed: i16,
   pub direction: Direction,
+}
+
+#[derive(Component, Serialize, Deserialize)]
+#[storage(VecStorage)]
+pub struct Rotation {
+  pub speed: f32,
+  pub angle: Angle,
+  pub fov: i16,
 }

@@ -7,8 +7,9 @@ mod resource;
 mod system;
 mod utils;
 mod wad;
+mod angle;
 
-use crate::component::{Direction, KeyboardControlled, MovementCommand, Position, Velocity};
+use crate::component::*;
 use crate::entity::create_player;
 use crate::resource::create_map;
 use crate::system::keyboard::Keyboard;
@@ -17,6 +18,9 @@ use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::Wad;
 use specs::prelude::*;
 use wasm_bindgen::prelude::*;
+use crate::wad::node::Node;
+use crate::wad::seg::Seg;
+use crate::wad::ssector::SSector;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -37,6 +41,8 @@ pub fn get_sub_sector(node: usize) -> usize {
 }
 
 // TODO: everytime the player moves we uopdate which segs should be rendered
+// But this is handled at first in javascript. The Physics system calculate the
+// angle with every tick. Javascript gets it from rust and calclates the segs.
 
 #[wasm_bindgen]
 pub struct Doom {
@@ -54,23 +60,47 @@ impl Doom {
     ecs.register::<KeyboardControlled>();
     ecs.register::<Position>();
     ecs.register::<Velocity>();
+    ecs.register::<Rotation>();
     Ok(Doom { wad, ecs })
   }
 
   #[wasm_bindgen]
-  pub fn tick(&mut self, events: &str) -> Result<JsValue, JsValue> {
+  pub fn tick(&mut self, events: &str) {
     match events {
       "a" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Left)),
       "d" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Right)),
       "w" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Up)),
       "s" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Down)),
-      _ => *self.ecs.write_resource() = Some(MovementCommand::Stop),
+      "q" => *self.ecs.write_resource() = Some(RotationCommand::Rotate(Direction::Left)),
+      "e" => *self.ecs.write_resource() = Some(RotationCommand::Rotate(Direction::Right)),
+      _ => {
+        *self.ecs.write_resource() = Some(MovementCommand::Stop);
+        *self.ecs.write_resource() = Some(RotationCommand::Stop);
+      }
     }
     self.run_systems();
+  }
 
+  pub fn get_player(&self) -> Result<JsValue, JsValue> {
     let position_storage = self.ecs.read_storage::<Position>();
-    let positions: Vec<&Position> = position_storage.join().collect();
-    Ok(JsValue::from_serde(&positions).unwrap())
+    let rotation_storage = self.ecs.read_storage::<Rotation>();
+    let joined: Vec<_> = (&position_storage, &rotation_storage).join().collect();
+    Ok(JsValue::from_serde(&joined).unwrap())
+  }
+
+  pub fn get_nodes(&self) -> Result<JsValue, JsValue> {
+    let nodes = &*self.ecs.read_resource::<Vec<Node>>();
+    Ok(JsValue::from_serde(&nodes).unwrap())
+  }
+
+  pub fn get_segs(&self) -> Result<JsValue, JsValue> {
+    let segs = &*self.ecs.read_resource::<Vec<Seg>>();
+    Ok(JsValue::from_serde(&segs).unwrap())
+  }
+
+  pub fn get_ssecttors(&self) -> Result<JsValue, JsValue> {
+    let ssectors_resource = &*self.ecs.read_resource::<Vec<SSector>>();
+    Ok(JsValue::from_serde(&ssectors_resource).unwrap())
   }
 
   fn run_systems(&mut self) {
@@ -92,7 +122,9 @@ impl Doom {
   #[wasm_bindgen(js_name = "loadPlayer")]
   pub fn load_player(&mut self, map: &str, id: u16) -> Result<(), JsValue> {
     let movement_command: Option<MovementCommand> = None;
+    let rotation_commnad: Option<RotationCommand> = None;
     self.ecs.insert(movement_command);
+    self.ecs.insert(rotation_commnad);
     create_player(map, id, &self.wad, &mut self.ecs).map_err(|e| e.to_string())?;
     Ok(())
   }

@@ -1,9 +1,10 @@
-use crate::component::{Direction, KeyboardControlled, Position, Velocity};
+use crate::component::{Direction, KeyboardControlled, Position, Velocity, Rotation};
 use crate::datatypes::Result;
 use crate::errors::DoomError;
 use crate::wad::thing::Thing;
 use crate::wad::Wad;
 use specs::{Builder, World, WorldExt};
+use crate::angle::Angle;
 
 pub fn create_player(map: &str, id: u16, wad: &Wad, world: &mut World) -> Result<()> {
   match wad.find_map_index(map) {
@@ -21,6 +22,11 @@ pub fn create_player(map: &str, id: u16, wad: &Wad, world: &mut World) -> Result
             .with(Velocity {
               speed: 0,
               direction: Direction::Right,
+            })
+            .with(Rotation {
+              speed: 0.0,
+              angle: Angle::new(thing.direction as f32),
+              fov: 90,
             })
             .build();
           Ok(())

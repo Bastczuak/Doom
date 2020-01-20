@@ -1,16 +1,24 @@
 import { Doom, checkForSubSector, getSubSector } from 'doom'
 import * as THREE from 'three'
 
-function addPlayer ({ x, y, xShift, yShift }, scene) {
+function addPlayer ({ x, y, angle, xShift, yShift }, scene) {
   const player = scene.getObjectByName('player')
   if (player) {
     player.position.set(x + xShift, y + yShift, 0)
+    player.rotation.z = angle * Math.PI / 180
     return
   }
 
-  const geometry = new THREE.CircleGeometry(25, 32)
-  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-  const mesh = new THREE.Mesh(geometry, material)
+  const geometry = new THREE.Geometry()
+  const v1 = new THREE.Vector3(-30, 0, 0)
+  const v2 = new THREE.Vector3(30, 0, 0)
+  const v3 = new THREE.Vector3(0, 60, 0)
+  geometry.vertices.push(v1)
+  geometry.vertices.push(v2)
+  geometry.vertices.push(v3)
+  geometry.faces.push(new THREE.Face3(0, 1, 2))
+  geometry.computeFaceNormals()
+  const mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial())
   mesh.position.set(x + xShift, y + yShift, 0)
   mesh.name = 'player'
   scene.add(mesh)
@@ -180,10 +188,11 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
   doom.loadPlayer('E1M1', 1)
 
   const animate = () => {
-    const entities = doom.tick(pressedKey)
-    addPlayer({ ...entities[0], xShift, yShift }, scene)
+    doom.tick(pressedKey)
+    const player = doom.get_player()[0]
+    addPlayer({ ...player['0'], ...player['1'], xShift, yShift }, scene)
     renderer.render(scene, camera)
-    pressedKey = ""
+    pressedKey = ''
     requestAnimationFrame(animate)
   }
   animate()

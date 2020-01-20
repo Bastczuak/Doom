@@ -1,8 +1,9 @@
 use std::cmp;
 use std::cmp::Ordering;
 use std::ops;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Angle(f32);
 
 impl Angle {
@@ -35,6 +36,12 @@ impl ops::Add for Angle {
 impl ops::AddAssign for Angle {
   fn add_assign(&mut self, rhs: Self) {
     *self = Self::new(self.0 + rhs.0)
+  }
+}
+
+impl ops::AddAssign<f32> for Angle {
+  fn add_assign(&mut self, rhs: f32) {
+    *self = Self::new(self.0 + rhs)
   }
 }
 
@@ -118,7 +125,7 @@ impl cmp::PartialOrd<f32> for Angle {
 
 #[cfg(test)]
 mod tests {
-  use crate::wad::angle::Angle;
+  use crate::angle::Angle;
 
   #[test]
   fn overload_add() {
