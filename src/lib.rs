@@ -1,3 +1,4 @@
+mod angle;
 mod component;
 mod datatypes;
 mod entity;
@@ -7,20 +8,21 @@ mod resource;
 mod system;
 mod utils;
 mod wad;
-mod angle;
 
+use crate::angle::Angle;
 use crate::component::*;
 use crate::entity::create_player;
 use crate::resource::create_map;
 use crate::system::keyboard::Keyboard;
 use crate::system::physics::Physics;
 use crate::utils::{set_panic_hook, to_vec_u8};
-use crate::wad::Wad;
-use specs::prelude::*;
-use wasm_bindgen::prelude::*;
 use crate::wad::node::Node;
 use crate::wad::seg::Seg;
 use crate::wad::ssector::SSector;
+use crate::wad::vertex::Vertex;
+use crate::wad::Wad;
+use specs::prelude::*;
+use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.

@@ -1,7 +1,7 @@
+use crate::angle::Angle;
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs_derive::Component;
-use crate::angle::Angle;
 
 #[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
 pub enum Direction {

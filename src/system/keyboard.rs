@@ -35,13 +35,11 @@ impl<'a> System<'a> for Keyboard {
       }
 
       match rotation_command {
-        &RotationCommand::Rotate(direction) => {
-          match direction {
-            Direction::Left => rot.speed = PLAYER_ROTATION_SPEED,
-            Direction::Right => rot.speed = -PLAYER_ROTATION_SPEED,
-            _ => rot.speed = 0.0,
-          }
-        }
+        &RotationCommand::Rotate(direction) => match direction {
+          Direction::Left => rot.speed = PLAYER_ROTATION_SPEED,
+          Direction::Right => rot.speed = -PLAYER_ROTATION_SPEED,
+          _ => rot.speed = 0.0,
+        },
         RotationCommand::Stop => rot.speed = 0.0,
       }
     }
