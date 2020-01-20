@@ -2,7 +2,6 @@ use std::cmp;
 use std::cmp::Ordering;
 use std::ops;
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::__rt::core::ops::{Add, Sub};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Angle(f32);
@@ -38,7 +37,7 @@ impl ops::Add<f32> for Angle {
   type Output = Self;
 
   fn add(self, rhs: f32) -> Self::Output {
-    Self::new(self.0 + rhs.0)
+    Self::new(self.0 + rhs)
   }
 }
 
@@ -66,7 +65,7 @@ impl ops::Sub<f32> for Angle {
   type Output = Self;
 
   fn sub(self, rhs: f32) -> Self::Output {
-    Self::new(self.0 - rhs.0)
+    Self::new(self.0 - rhs)
   }
 }
 
@@ -78,7 +77,7 @@ impl ops::SubAssign for Angle {
 
 impl ops::SubAssign<f32> for Angle {
   fn sub_assign(&mut self, rhs: f32) {
-    *self = Self::new(self.0 - rhs.0)
+    *self = Self::new(self.0 - rhs)
   }
 }
 
