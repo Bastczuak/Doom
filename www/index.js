@@ -50,11 +50,11 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnLeftSide }, scene) {
+function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnLeftSide, clipVertexesInFov }, scene) {
   const recursive = async (nodeIndex) => {
     if (checkForSubSector(nodeIndex)) {
       const ssector = ssectors[getSubSector(nodeIndex)]
-      traverseSectors({ segs, ssector, vertexes, yShift, xShift }, scene)
+      traverseSectors({ segs, ssector, vertexes, yShift, xShift, clipVertexesInFov }, scene)
       return
     }
 
@@ -182,15 +182,20 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
   const doom = Doom.new(downloadedMap)
 
   const map = doom.loadMap('E1M1')
+  const segs = doom.get_segs()
+  const nodes = doom.get_nodes()
+  const ssectors = doom.get_ssecttors()
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
   addMap({ ...map, xShift, yShift }, scene)
   doom.loadPlayer('E1M1', 1)
 
+  const player = () => ({ ...doom.get_player()[0]['0'], ...doom.get_player()[0]['1'] })
+  addPlayer({ ...player(), xShift, yShift }, scene)
+  traverseBspTree({ player: player(), xShift, yShift, ...map, nodes, segs, ssectors }, scene)
+
   const animate = () => {
     doom.tick(pressedKey)
-    const player = doom.get_player()[0]
-    addPlayer({ ...player['0'], ...player['1'], xShift, yShift }, scene)
     renderer.render(scene, camera)
     pressedKey = ''
     requestAnimationFrame(animate)

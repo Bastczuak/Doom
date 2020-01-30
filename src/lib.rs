@@ -9,7 +9,6 @@ mod system;
 mod utils;
 mod wad;
 
-use crate::angle::Angle;
 use crate::component::*;
 use crate::entity::create_player;
 use crate::resource::create_map;
@@ -19,7 +18,6 @@ use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::node::Node;
 use crate::wad::seg::Seg;
 use crate::wad::ssector::SSector;
-use crate::wad::vertex::Vertex;
 use crate::wad::Wad;
 use specs::prelude::*;
 use wasm_bindgen::prelude::*;
