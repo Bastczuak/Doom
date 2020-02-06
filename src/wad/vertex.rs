@@ -3,7 +3,12 @@ use crate::utils::to_i16;
 use crate::wad::WadMetaData;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct VisibleVertexes {
+  pub vertexes: Vec<(Vertex, Vertex)>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
 pub struct Vertex {
   pub x: i16,
   pub y: i16,

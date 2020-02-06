@@ -5,20 +5,20 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Node {
-  x_partition: i16,
-  y_partition: i16,
-  change_x_partition: i16,
-  change_y_partition: i16,
-  right_box_top: i16,
-  right_box_bottom: i16,
-  right_box_left: i16,
-  right_box_right: i16,
-  left_box_top: i16,
-  left_box_bottom: i16,
-  left_box_left: i16,
-  left_box_right: i16,
-  right_child: u16, // front
-  left_child: u16,  // back
+  pub x_partition: i16,
+  pub y_partition: i16,
+  pub change_x_partition: i16,
+  pub change_y_partition: i16,
+  pub right_box_top: i16,
+  pub right_box_bottom: i16,
+  pub right_box_left: i16,
+  pub right_box_right: i16,
+  pub left_box_top: i16,
+  pub left_box_bottom: i16,
+  pub left_box_left: i16,
+  pub left_box_right: i16,
+  pub right_child: u16, // front
+  pub left_child: u16,  // back
 }
 
 impl WadMetaData for Node {

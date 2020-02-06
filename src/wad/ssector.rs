@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SSector {
-  seg_count: u16,
-  first_seg: u16,
+  pub seg_count: u16,
+  pub first_seg: u16,
 }
 
 impl WadMetaData for SSector {

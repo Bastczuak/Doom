@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Seg {
-  start_vertex: u16, // Vertex 1
-  end_vertex: u16,   // Vertex 2
-  angle: u16,
-  linedef: u16,
-  side: u16, // 0 = front, 1 = back
-  offset: u16,
+  pub start_vertex: u16, // Vertex 1
+  pub end_vertex: u16,   // Vertex 2
+  pub angle: u16,
+  pub linedef: u16,
+  pub side: u16, // 0 = front, 1 = back
+  pub offset: u16,
 }
 
 impl WadMetaData for Seg {

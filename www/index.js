@@ -1,160 +1,84 @@
 import { Doom, checkForSubSector, getSubSector } from 'doom'
 import * as THREE from 'three'
+import Stats from 'stats.js'
 
 function addPlayer ({ x, y, angle, xShift, yShift }, scene) {
   const player = scene.getObjectByName('player')
   if (player) {
     player.position.set(x + xShift, y + yShift, 0)
-    player.rotation.z = angle * Math.PI / 180
+
+    scene.children.forEach(child => {
+      if (child.name === 'fov') {
+        scene.remove(child)
+      }
+    })
+
+    const positions = []
+    const rad = angle * Math.PI / 180
+    const halfFov = Math.PI / 4
+    positions.push(x, y, 1)
+    positions.push(x + Math.cos(rad - halfFov) * 1000, y + Math.sin(rad - halfFov) * 1000, 1)
+
+    positions.push(x, y, 1)
+    positions.push(x + Math.cos(rad + halfFov) * 1000, y + Math.sin(rad + halfFov) * 1000, 1)
+
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    const material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
+    const l = new THREE.LineSegments(geometry, material)
+    l.position.set(xShift, yShift, 0)
+    l.name = 'fov'
+    scene.add(l)
     return
   }
 
-  const geometry = new THREE.Geometry()
-  const v1 = new THREE.Vector3(-30, 0, 0)
-  const v2 = new THREE.Vector3(30, 0, 0)
-  const v3 = new THREE.Vector3(0, 60, 0)
-  geometry.vertices.push(v1)
-  geometry.vertices.push(v2)
-  geometry.vertices.push(v3)
-  geometry.faces.push(new THREE.Face3(0, 1, 2))
-  geometry.computeFaceNormals()
-  const mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial())
+  const geometry = new THREE.CircleGeometry(25, 32)
+  const material = new THREE.MeshBasicMaterial({ color: 0xffffff })
+  const mesh = new THREE.Mesh(geometry, material)
   mesh.position.set(x + xShift, y + yShift, 0)
   mesh.name = 'player'
   scene.add(mesh)
 }
 
-let pressedKey = ''
-
-document.addEventListener('keydown', e => {
-  pressedKey = e.key
-})
-
 function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
-  line_defs.forEach(line => {
+  const positions = []
+  for (let line of line_defs) {
     const start = vertexes[line.start_vertex]
     const end = vertexes[line.end_vertex]
-    const geometry = new THREE.Geometry()
-    geometry.vertices.push(
-      new THREE.Vector3(start.x, start.y, 0),
-      new THREE.Vector3(end.x, end.y, 0),
-    )
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff })
-    const l = new THREE.Line(geometry, material)
-    l.position.set(xShift, yShift, 0)
-    scene.add(l)
+    positions.push(start.x, start.y, 0)
+    positions.push(end.x, end.y, 0)
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  const material = new THREE.LineBasicMaterial({ color: 0xffffff })
+  const l = new THREE.LineSegments(geometry, material)
+  l.position.set(xShift, yShift, 0)
+  scene.add(l)
+}
+
+function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
+  scene.children.forEach(child => {
+    if (child.name === 'line') {
+      scene.remove(child)
+    }
   })
-}
 
-function sleep (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-function addNodes ({ nodes, segs, ssectors, vertexes, xShift, yShift, isPointOnLeftSide, clipVertexesInFov }, scene) {
-  const recursive = async (nodeIndex) => {
-    if (checkForSubSector(nodeIndex)) {
-      const ssector = ssectors[getSubSector(nodeIndex)]
-      traverseSectors({ segs, ssector, vertexes, yShift, xShift, clipVertexesInFov }, scene)
-      return
-    }
-
-    scene.remove(scene.getObjectByName('splitter'))
-    scene.remove(scene.getObjectByName('left'))
-    scene.remove(scene.getObjectByName('right'))
-
-    const {
-      x_partition,
-      y_partition,
-      change_x_partition,
-      change_y_partition,
-      right_box_top,
-      right_box_bottom,
-      right_box_right,
-      right_box_left,
-      left_box_top,
-      left_box_bottom,
-      left_box_right,
-      left_box_left,
-    } = nodes[nodeIndex]
-
-    let material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
-    let geometry = new THREE.Geometry()
-    geometry.vertices.push(
-      new THREE.Vector3(right_box_left, right_box_top, 0),
-      new THREE.Vector3(right_box_right, right_box_top, 0),
-      new THREE.Vector3(right_box_right, right_box_bottom, 0),
-      new THREE.Vector3(right_box_left, right_box_bottom, 0),
-      new THREE.Vector3(right_box_left, right_box_top, 0),
-    )
-    let rect = new THREE.Line(geometry, material)
-    rect.position.set(xShift, yShift, 0)
-    rect.name = 'right'
-    scene.add(rect)
-
-    material = new THREE.LineBasicMaterial({ color: 0xff0000 })
-    geometry = new THREE.Geometry()
-    geometry.vertices.push(
-      new THREE.Vector3(left_box_left, left_box_top, 0),
-      new THREE.Vector3(left_box_right, left_box_top, 0),
-      new THREE.Vector3(left_box_right, left_box_bottom, 0),
-      new THREE.Vector3(left_box_left, left_box_bottom, 0),
-      new THREE.Vector3(left_box_left, left_box_top, 0),
-    )
-    rect = new THREE.Line(geometry, material)
-    rect.position.set(xShift, yShift, 0)
-    rect.name = 'left'
-    scene.add(rect)
-
-    geometry = new THREE.Geometry()
-    geometry.vertices.push(
-      new THREE.Vector3(x_partition, y_partition, 0),
-      new THREE.Vector3(x_partition + change_x_partition, y_partition + change_y_partition, 0),
-    )
-    material = new THREE.LineBasicMaterial({ color: 0x77c9f9 })
-    const line = new THREE.Line(geometry, material)
-    line.position.set(xShift, yShift, 0)
-    line.name = 'splitter'
-    scene.add(line)
-
-    await sleep(100)
-
-    if (isPointOnLeftSide(nodeIndex)) {
-      await recursive(nodes[nodeIndex].left_child)
-      await recursive(nodes[nodeIndex].right_child)
-    } else {
-      await recursive(nodes[nodeIndex].right_child)
-      await recursive(nodes[nodeIndex].left_child)
-    }
+  const positions = []
+  for (let v of vertexes) {
+    const start = v['0']
+    const end = v['1']
+    positions.push(start.x, start.y, 1)
+    positions.push(end.x, end.y, 1)
   }
-  return recursive
-}
 
-async function traverseBspTree ({ nodes, player, xShift, yShift, segs, ssectors, vertexes }, scene) {
-  const isPointOnLeftSide = (nodeIndex) => {
-    const dx = player.x - nodes[nodeIndex].x_partition
-    const dy = player.y - nodes[nodeIndex].y_partition
-    return (((dx * nodes[nodeIndex].change_y_partition) - (dy * nodes[nodeIndex].change_x_partition)) <= 0)
-  }
-  const recursive = addNodes({ nodes, xShift, yShift, isPointOnLeftSide, segs, ssectors, vertexes }, scene)
-  const startIndex = nodes.length - 1
-  await recursive(startIndex)
-}
-
-function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
-  for (let i = 0; i < ssector.seg_count; i++) {
-    const seg = segs[ssector.first_seg + i]
-    const start = vertexes[seg.start_vertex]
-    const end = vertexes[seg.end_vertex]
-    const geometry = new THREE.Geometry()
-    geometry.vertices.push(
-      new THREE.Vector3(start.x, start.y, 0),
-      new THREE.Vector3(end.x, end.y, 0),
-    )
-    const material = new THREE.LineBasicMaterial({ color: 0xffc0cb })
-    const l = new THREE.Line(geometry, material)
-    l.position.set(xShift, yShift, 0)
-    scene.add(l)
-  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  const material = new THREE.LineBasicMaterial({ color: 0xff0000 })
+  const l = new THREE.LineSegments(geometry, material)
+  l.position.set(xShift, yShift, 0)
+  l.name = 'line'
+  scene.add(l)
 }
 
 (async function run () {
@@ -164,7 +88,7 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000)
   camera.position.set(0, 0, 150)
-  camera.lookAt(0, 0, 0)
+  camera.lookAt(scene.position)
 
   const renderer = new THREE.WebGLRenderer()
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -191,14 +115,27 @@ function traverseSectors ({ segs, ssector, vertexes, xShift, yShift }, scene) {
   doom.loadPlayer('E1M1', 1)
 
   const player = () => ({ ...doom.get_player()[0]['0'], ...doom.get_player()[0]['1'] })
-  addPlayer({ ...player(), xShift, yShift }, scene)
-  traverseBspTree({ player: player(), xShift, yShift, ...map, nodes, segs, ssectors }, scene)
+
+  const stats = new Stats()
+  document.body.appendChild(stats.dom)
+
+  let pressedKey = ''
+
+  document.addEventListener('keydown', e => {
+    pressedKey = e.key
+  })
 
   const animate = () => {
+    stats.begin()
     doom.tick(pressedKey)
+    addPlayer({ ...player(), xShift, yShift }, scene)
+    renderVisibleVertexes({ ...doom.get_visible_vertexes(), xShift, yShift }, scene)
     renderer.render(scene, camera)
     pressedKey = ''
+    stats.end()
     requestAnimationFrame(animate)
   }
+
   animate()
+
 })()

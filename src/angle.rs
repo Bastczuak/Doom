@@ -3,7 +3,7 @@ use std::cmp;
 use std::cmp::Ordering;
 use std::ops;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Angle(f32);
 
 impl Angle {
@@ -78,6 +78,14 @@ impl ops::Sub for Angle {
 
   fn sub(self, rhs: Self) -> Self::Output {
     Self::new(self.0 - rhs.0)
+  }
+}
+
+impl ops::Sub<Angle> for f32 {
+  type Output = Angle;
+
+  fn sub(self, rhs: Angle) -> Self::Output {
+    Angle::new(self - rhs.0)
   }
 }
 

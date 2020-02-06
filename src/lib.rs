@@ -14,6 +14,7 @@ use crate::entity::create_player;
 use crate::resource::create_map;
 use crate::system::keyboard::Keyboard;
 use crate::system::physics::Physics;
+use crate::system::view::View;
 use crate::utils::{set_panic_hook, to_vec_u8};
 use crate::wad::node::Node;
 use crate::wad::seg::Seg;
@@ -21,6 +22,7 @@ use crate::wad::ssector::SSector;
 use crate::wad::Wad;
 use specs::prelude::*;
 use wasm_bindgen::prelude::*;
+use crate::wad::vertex::VisibleVertexes;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -103,11 +105,18 @@ impl Doom {
     Ok(JsValue::from_serde(&ssectors_resource).unwrap())
   }
 
+  pub fn get_visible_vertexes(&self) -> Result<JsValue, JsValue> {
+    let visible_vertexes_resource = &*self.ecs.read_resource::<VisibleVertexes>();
+    Ok(JsValue::from_serde(&visible_vertexes_resource).unwrap())
+  }
+
   fn run_systems(&mut self) {
     let mut keyboard = Keyboard {};
     keyboard.run_now(&self.ecs);
     let mut physics = Physics {};
     physics.run_now(&self.ecs);
+    let mut view = View {};
+    view.run_now(&self.ecs);
     self.ecs.maintain();
   }
 
