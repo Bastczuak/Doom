@@ -4,40 +4,39 @@ import Stats from 'stats.js'
 
 function addPlayer ({ x, y, angle, xShift, yShift }, scene) {
   const player = scene.getObjectByName('player')
+  const positions = []
+  const rad = angle * Math.PI / 180
+  const halfFov = Math.PI / 4
+  positions.push(
+    x, y, 1,
+    x + Math.cos(rad - halfFov) * 1000, y + Math.sin(rad - halfFov) * 1000, 1,
+    x, y, 1,
+    x + Math.cos(rad + halfFov) * 1000, y + Math.sin(rad + halfFov) * 1000, 1,
+  )
+
   if (player) {
     player.position.set(x + xShift, y + yShift, 0)
-
-    scene.children.forEach(child => {
-      if (child.name === 'fov') {
-        scene.remove(child)
-      }
-    })
-
-    const positions = []
-    const rad = angle * Math.PI / 180
-    const halfFov = Math.PI / 4
-    positions.push(x, y, 1)
-    positions.push(x + Math.cos(rad - halfFov) * 1000, y + Math.sin(rad - halfFov) * 1000, 1)
-
-    positions.push(x, y, 1)
-    positions.push(x + Math.cos(rad + halfFov) * 1000, y + Math.sin(rad + halfFov) * 1000, 1)
-
-    const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-    const material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
-    const l = new THREE.LineSegments(geometry, material)
-    l.position.set(xShift, yShift, 0)
-    l.name = 'fov'
-    scene.add(l)
+    const fov = scene.getObjectByName('fov')
+    if (fov) {
+      fov.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    }
     return
   }
 
-  const geometry = new THREE.CircleGeometry(25, 32)
-  const material = new THREE.MeshBasicMaterial({ color: 0xffffff })
+  let geometry = new THREE.CircleBufferGeometry(25, 32)
+  let material = new THREE.MeshBasicMaterial({ color: 0xffffff })
   const mesh = new THREE.Mesh(geometry, material)
   mesh.position.set(x + xShift, y + yShift, 0)
   mesh.name = 'player'
   scene.add(mesh)
+
+  geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  material = new THREE.LineBasicMaterial({ color: 0x00ff00 })
+  const l = new THREE.LineSegments(geometry, material)
+  l.position.set(xShift, yShift, 0)
+  l.name = 'fov'
+  scene.add(l)
 }
 
 function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
@@ -45,8 +44,7 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   for (let line of line_defs) {
     const start = vertexes[line.start_vertex]
     const end = vertexes[line.end_vertex]
-    positions.push(start.x, start.y, 0)
-    positions.push(end.x, end.y, 0)
+    positions.push(start.x, start.y, 0, end.x, end.y, 0)
   }
 
   const geometry = new THREE.BufferGeometry()
@@ -58,18 +56,17 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
 }
 
 function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
-  scene.children.forEach(child => {
-    if (child.name === 'line') {
-      scene.remove(child)
-    }
-  })
-
+  const visibleVertexes = scene.getObjectByName('visibleVertexes')
   const positions = []
   for (let v of vertexes) {
     const start = v['0']
     const end = v['1']
-    positions.push(start.x, start.y, 1)
-    positions.push(end.x, end.y, 1)
+    positions.push(start.x, start.y, 1, end.x, end.y, 1)
+  }
+
+  if (visibleVertexes) {
+    visibleVertexes.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    return
   }
 
   const geometry = new THREE.BufferGeometry()
@@ -77,7 +74,7 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   const material = new THREE.LineBasicMaterial({ color: 0xff0000 })
   const l = new THREE.LineSegments(geometry, material)
   l.position.set(xShift, yShift, 0)
-  l.name = 'line'
+  l.name = 'visibleVertexes'
   scene.add(l)
 }
 
@@ -94,21 +91,12 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   renderer.setSize(window.innerWidth, window.innerHeight)
   document.body.appendChild(renderer.domElement)
 
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-  }, false)
-
   const response = await fetch('./doomu.wad')
   const downloadedMap = await response.arrayBuffer()
 
   const doom = Doom.new(downloadedMap)
 
   const map = doom.loadMap('E1M1')
-  const segs = doom.get_segs()
-  const nodes = doom.get_nodes()
-  const ssectors = doom.get_ssecttors()
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
   addMap({ ...map, xShift, yShift }, scene)
@@ -125,6 +113,12 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
     pressedKey = e.key
   })
 
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+  }, false)
+
   const animate = () => {
     stats.begin()
     doom.tick(pressedKey)
@@ -135,7 +129,5 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
     stats.end()
     requestAnimationFrame(animate)
   }
-
   animate()
-
 })()
