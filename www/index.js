@@ -102,7 +102,13 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   addMap({ ...map, xShift, yShift }, scene)
   doom.loadPlayer('E1M1', 1)
 
-  const player = () => ({ ...doom.get_player()[0]['0'], ...doom.get_player()[0]['1'] })
+  const player = () => {
+    const player = doom.getPlayer()
+    return {
+      ...player[0]['0'],
+      ...player[0]['1'],
+    }
+  }
 
   const stats = new Stats()
   document.body.appendChild(stats.dom)
@@ -123,7 +129,7 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
     stats.begin()
     doom.tick(pressedKey)
     addPlayer({ ...player(), xShift, yShift }, scene)
-    renderVisibleVertexes({ ...doom.get_visible_vertexes(), xShift, yShift }, scene)
+    renderVisibleVertexes({ ...doom.getVisibleVertexes(), xShift, yShift }, scene)
     renderer.render(scene, camera)
     pressedKey = ''
     stats.end()

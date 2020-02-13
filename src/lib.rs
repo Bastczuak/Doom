@@ -16,9 +16,6 @@ use crate::system::keyboard::Keyboard;
 use crate::system::physics::Physics;
 use crate::system::view::View;
 use crate::utils::{set_panic_hook, to_vec_u8};
-use crate::wad::node::Node;
-use crate::wad::seg::Seg;
-use crate::wad::ssector::SSector;
 use crate::wad::Wad;
 use specs::prelude::*;
 use wasm_bindgen::prelude::*;
@@ -66,7 +63,6 @@ impl Doom {
     Ok(Doom { wad, ecs })
   }
 
-  #[wasm_bindgen]
   pub fn tick(&mut self, events: &str) {
     match events {
       "a" => *self.ecs.write_resource() = Some(MovementCommand::Move(Direction::Left)),
@@ -83,6 +79,7 @@ impl Doom {
     self.run_systems();
   }
 
+  #[wasm_bindgen(js_name = "getPlayer")]
   pub fn get_player(&self) -> Result<JsValue, JsValue> {
     let position_storage = self.ecs.read_storage::<Position>();
     let rotation_storage = self.ecs.read_storage::<Rotation>();
@@ -90,21 +87,7 @@ impl Doom {
     Ok(JsValue::from_serde(&joined).unwrap())
   }
 
-  pub fn get_nodes(&self) -> Result<JsValue, JsValue> {
-    let nodes = &*self.ecs.read_resource::<Vec<Node>>();
-    Ok(JsValue::from_serde(&nodes).unwrap())
-  }
-
-  pub fn get_segs(&self) -> Result<JsValue, JsValue> {
-    let segs = &*self.ecs.read_resource::<Vec<Seg>>();
-    Ok(JsValue::from_serde(&segs).unwrap())
-  }
-
-  pub fn get_ssecttors(&self) -> Result<JsValue, JsValue> {
-    let ssectors_resource = &*self.ecs.read_resource::<Vec<SSector>>();
-    Ok(JsValue::from_serde(&ssectors_resource).unwrap())
-  }
-
+  #[wasm_bindgen(js_name = "getVisibleVertexes")]
   pub fn get_visible_vertexes(&self) -> Result<JsValue, JsValue> {
     let visible_vertexes_resource = &*self.ecs.read_resource::<VisibleVertexes>();
     Ok(JsValue::from_serde(&visible_vertexes_resource).unwrap())
