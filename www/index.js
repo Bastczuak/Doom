@@ -40,6 +40,11 @@ function addPlayer ({ x, y, angle, xShift, yShift }, scene) {
 }
 
 function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
+  const map = scene.getObjectByName('map')
+  if (map) {
+    return
+  }
+
   const positions = []
   for (let line of line_defs) {
     const start = vertexes[line.start_vertex]
@@ -52,6 +57,7 @@ function addMap ({ line_defs, vertexes, xShift, yShift }, scene) {
   const material = new THREE.LineBasicMaterial({ color: 0xffffff })
   const l = new THREE.LineSegments(geometry, material)
   l.position.set(xShift, yShift, 0)
+  l.name = 'map'
   scene.add(l)
 }
 
@@ -78,6 +84,25 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   scene.add(l)
 }
 
+function clearScene (scene) {
+  const player = scene.getObjectByName('player')
+  const map = scene.getObjectByName('map')
+  const fov = scene.getObjectByName('fov')
+  const visibleVertexes = scene.getObjectByName('visibleVertexes')
+  if (player) {
+    scene.remove(player)
+  }
+  if (map) {
+    scene.remove(map)
+  }
+  if (fov) {
+    scene.remove(fov)
+  }
+  if (visibleVertexes) {
+    scene.remove(visibleVertexes)
+  }
+}
+
 (async function run () {
   const scene = new THREE.Scene()
   const scale = 0.025
@@ -99,7 +124,6 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   const map = doom.loadMap('E1M1')
   const xShift = -map.x_min - map.x_max / 2
   const yShift = -map.y_min + map.y_max / 2
-  addMap({ ...map, xShift, yShift }, scene)
   doom.loadPlayer('E1M1', 1)
 
   const player = () => {
@@ -114,9 +138,14 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   document.body.appendChild(stats.dom)
 
   let pressedKey = ''
+  let renderAutoMap = true
 
   document.addEventListener('keydown', e => {
     pressedKey = e.key
+
+    if (e.key === 'Tab') {
+      renderAutoMap = !renderAutoMap
+    }
   })
 
   window.addEventListener('resize', () => {
@@ -128,8 +157,13 @@ function renderVisibleVertexes ({ vertexes, xShift, yShift }, scene) {
   const animate = () => {
     stats.begin()
     doom.tick(pressedKey)
-    addPlayer({ ...player(), xShift, yShift }, scene)
-    renderVisibleVertexes({ ...doom.getVisibleVertexes(), xShift, yShift }, scene)
+    if (renderAutoMap) {
+      addMap({ ...map, xShift, yShift }, scene)
+      addPlayer({ ...player(), xShift, yShift }, scene)
+      renderVisibleVertexes({ ...doom.getVisibleVertexes(), xShift, yShift }, scene)
+    } else {
+      clearScene(scene)
+    }
     renderer.render(scene, camera)
     pressedKey = ''
     stats.end()
