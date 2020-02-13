@@ -46,10 +46,18 @@ impl<'a> ViewFinder<'a> {
   fn clip_vertexes_in_fov(&self, v1: &Vertex, v2: &Vertex) -> bool {
     let rot = self.player.0;
     let fov = f32::from(rot.fov);
+    let half_fov = fov / 2.0;
     let mut v1_angle = self.vertex_to_angle(v1);
     let mut v2_angle = self.vertex_to_angle(v2);
-    v2_angle = v2_angle - rot.angle;
-    let half_fov = fov / 2.0;
+    let delta = v1_angle - v2_angle;
+
+    if delta >= 180.0 {
+      return false;
+    }
+
+    v1_angle -= rot.angle;
+    v2_angle -= rot.angle;
+
     let mut v1_moved = v1_angle + half_fov;
 
     if v1_moved > fov {
