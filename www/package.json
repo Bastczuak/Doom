@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "copy-webpack-plugin": "^5.0.0",
+    "copy-webpack-plugin": "^11.0.0",
     "doom": "file:../pkg",
     "eslint": "^6.6.0",
     "eslint-config-standard": "^14.1.0",
@@ -17,8 +17,8 @@
     "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.1.0",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
